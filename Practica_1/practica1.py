@@ -300,7 +300,7 @@ def readData(file_x, file_y):
 	return x, y
 
 # Funcion para calcular el error
-def mean_square_error(x,y,w):
+def MSE(x,y,w):
     """Error cuadrático medio (MSE)
     :param x: Matriz de datos de entrada 
     :param y: Vector objetivo 
@@ -311,7 +311,7 @@ def mean_square_error(x,y,w):
 
     return np.linalg.norm(x @ w - y)**2 / len(x)
 
-def dMse(x, y, w):
+def dMSE(x, y, w):
     """Derivada del error cuadrático medio
     :param x: Matriz de datos de entrada
     :param y: Vector objetivo
@@ -322,21 +322,8 @@ def dMse(x, y, w):
     return  2/len(x) * x.T @ (x @ w - y)
 
 
-def mini_batches(ids, batch_size):
-    """Genera mini-batches para ciertos índices
-    :param ids: vector de índices
-    :param batch_size: tamaño de cada mini-batch
-
-    :return: Array de numpy de mini-batches disjuntos
-    """
-
-    return np.array(
-        [ids[bi : bi + batch_size] for bi in range(0, len(ids), batch_size)],
-        dtype=object
-    )
-
 # Gradiente Descendente Estocastico para Regresión Lineal
-def sgd(x, y, lr, max_iters, stop_cond, batch_size=32, hist=False):
+def sgd(x, y, lr, epsilon, max_iters, stop_cond, batch_size=32, hist=False):
     """
     Algoritmo de gradiente descendiente estocástico (sgd) aplicado
     a Regresión Lineal.
@@ -344,8 +331,10 @@ def sgd(x, y, lr, max_iters, stop_cond, batch_size=32, hist=False):
     :param x: matriz de datos de entrada
     :param y: vector objetivo
     :param lr: Tasa de aprendizaje eta
-    :param max_iters: numero maximo de iteraciones (stop_cond)
+    :param epsilon: error máximo (depende de stop_cond)
+    :param max_iters: numero maximo de iteraciones (depende de stop_cond)
     :param stop_cond: Función de condición de parada. 
+           stop_cond(it, w, w_err, epsilon, max_iters)
     :param hist: True si se quiere devolver el histórico de pesos.
 
     :return: 
@@ -357,32 +346,56 @@ def sgd(x, y, lr, max_iters, stop_cond, batch_size=32, hist=False):
             ws: lista de tuplas x,y. Histórico del sgd.
     """
     w = np.zeros((x.shape[1]), )
-    x_ids = np.arange(len(X))
-    
     if hist: 
         ws = [tuple(w)]
 
+    w_err = [MSE(x, y, w)]    # Vector de errores
+    x_ids = np.arange(len(x))
     it = 0
+    batch_start = 0
 
-    # Cuando stop_cond evalúe a True, el algoritmo para.
-    while not stop_cond(it, w, epsilon, max_iters, grad_fun, fun):
+    while not stop_cond(it, w, w_err, epsilon, max_iters):
         # En cada epoch permutamos los índices
-        np.random.shuffle(x_ids)
+        if batch_start == 0:
+            np.random.shuffle(x_ids)
 
-        # Iteramos en una secuencia disjunta de mini-batches 
-        for mini_batch in mini_batches(x_ids, batch_size):
-            # Sólo un mini-batch participa en la actualización de pesos
-            w = w - lr*dMse(x[mini_batch, :], y[mini_batch]], w)
-            it += 1
+        batch_ids = x_ids[batch_start : batch_start + batch_size]
 
-            if hist: ws.append(tuple(w))
+        # Sólo un mini-batch participa en la adaptación
+        w = w - lr*dMSE(x[batch_ids, :], y[batch_ids], w)
+        w_err = MSE(x[batch_ids, :], y[batch_ids], w)
 
+        it += 1
+        batch_start += batch_size
+
+        # Nueva epoch
+        if batch_start >= len(x): 
+            batch_start = 0
+
+        if hist: ws.append(tuple(w))
+        
     return (ws, it) if hist else (w, it)
 
-def sgd_maxIter(x, y, lr, max_iters=50_000, batch_size=32, hist=False):
+def sgd_maxIter(x, y, lr, max_iters, epsilon=None, batch_size=32, hist=False):
     """Gradiente descendiente estocástico con nº máximo de iteraciones"""
 
-    return sgd(x, y, lr, max_iters, stop_cond_maxIter, batch_size=batch_size, hist=hist)
+    stop_cond_maxIter = lambda it, _, __, ___, max_iters: it >= max_iters
+
+    return sgd(x, y, lr, epsilon, max_iters, stop_cond_maxIter, batch_size=batch_size, hist=hist)
+
+def sgd_error(x, y, lr, epsilon, max_iters=None, batch_size=32, hist=False):
+    """Gradiente descendiente estocástico con condición de parada por error"""
+
+    stop_cond_error = lambda _, __, w_err, epsilon, ___: w_err <= epsilon
+
+    return sgd(x, y, lr, epsilon, max_iters, stop_cond_error, batch_size=batch_size, hist=hist)
+
+def sgd_maxIter_error(x, y, lr, epsilon, max_iters=50_000, batch_size=32, hist=False):
+    """Gradiente descendiente estocástico con condición de parada por error o nº maximo de iteraciones"""
+
+    stop_cond_maxIter_error = lambda it, _, w_err, epsilon, max_iter: it >= max_iters or w_err <= epsilon
+
+    return sgd(x, y, lr, epsilon, max_iters, stop_cond_maxIter_error, batch_size=batch_size, hist=hist)
 
 # Pseudoinversa	
 def pseudoinverse(x):
@@ -390,17 +403,34 @@ def pseudoinverse(x):
     :param x: Matriz de datos de entrada.
     :nota: se descompone la matriz en valores singulares.
            Si X = U D V^T, entoncex X^\dagger = V D^\dagger U^T
-    :return: (x^t x)^-1 x^t
+    :return: Pseudoinversa de x         (x^t x)^-1 x^t
     """
     # Alternativamente
     # return np.linalg.pinv(x) que también emplea SVD
 
-    u, d, vt = np.linalg.svd(x)
-    d = np.diag(d)
-    v = vt.T 
+    U, d, VT = np.linalg.svd(x, full_matrices=True)
+    D = np.zeros(x.shape)
+    # Matriz diagonal rectangular. Resto ceros.
+    D[:x.shape[1], :x.shape[1]] = np.diag(d)
+    V = VT.T
 
-    return v @ np.linalg.inv(d.T @ d) @ d.T @ u.T
+    return V @ np.linalg.inv(D.T @ D) @ D.T @ U.T
 
+def regresion_pinv(x, y):
+    """Resuelve el problema de regresión mediante el algoritmo de la Pseudoinversa
+
+    :param x: Matriz de datos de entrada
+    :param y: Vector objetivo
+
+    :return: w_lin = x^\dagger y
+    """
+
+    return pseudoinverse(x) @ y
+
+def plot_regression():
+    ""
+    # TODO
+    pass
 
 # Lectura de los datos de entrenamiento
 x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
@@ -408,17 +438,33 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 eta = 0.01
-w_sgd = sgd_maxIter(x, y, eta, max_iters=1_000, hist=True)
-w_sgd_2 = sgd_maxIter(x, y, eta, max_iters=30_000, hist=True)
+ws_sgd, it = sgd_maxIter(x, y, eta, max_iters=5_000, hist=True)
+ws_sgd2, it2 = sgd_maxIter(x, y, eta, max_iters=50_000, hist=True)
+w_pinv = regresion_pinv(x, y)
 
-w_sgd = sgd(x, y, eta, 5_000, stop_cond_maxIter, hist=True)
-w_sgd = pseudoinverse(x, y)
+ein_sgd = MSE(x, y, ws_sgd[-1])
+ein_sgd2 = MSE(x, y, ws_sgd2[-1])
+ein_pinv = MSE(x, y, w_pinv)
+
+eout_sgd = MSE(x_test, y_test, ws_sgd[-1])
+eout_sgd2 = MSE(x_test, y_test, ws_sgd2[-1])
+eout_pinv = MSE(x_test, y_test, w_pinv)
+
+print ('Bondad del resultado para grad. descendente estocastico:\n')
+
+print("Para 5_000 iteraciones: ")
+print(f"\tEin: {ein_sgd}")
+print(f"\tEout: {eout_sgd}")
+
+print("Para 50_000 iteraciones: ")
+print(f"\t Ein: {ein_sgd2}")
+print(f"\t Eout: {eout_sgd2}")
+
+print("Pseudoinversa")
+print(f"\t Ein: {ein_pinv}")
+print(f"\t Eout: {eout_pinv}")
 
 
-
-# print ('Bondad del resultado para grad. descendente estocastico:\n')
-# print ("Ein: ", Err(x,y,w))
-# print ("Eout: ", Err(x_test, y_test, w))
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
