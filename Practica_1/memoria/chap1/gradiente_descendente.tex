@@ -58,13 +58,15 @@ parada como que la función a minimizar quede por debajo de cierto umbral de
 error (i.e $E_{in} \leq \epsilon$) o simplemente un número máximo de iteraciones.
 Combinamos ambas en la implementación ofrecida an el archivo de código:
 
-\section{Ejercicio 1. Implementar el algoritmo de gradiente descendente}
+\section{Ejercicio 1}
+
+\textbf{Implementar el algoritmo de gradiente descendente}
 
 Analizamos la definición de la función descrita en el código:
 
 \begin{minted}{python}
-def gradient_descent(w_ini, lr, grad_fun, fun, epsilon, max_iters,
-                     stop_cond, hist=False):
+def gradient_descent(w_ini, lr, grad_fun, fun, epsilon, max_iters, 
+                     stop_cond,  hist=False):
 \end{minted}
 
 Sobre la cabecera:
@@ -83,36 +85,37 @@ Sobre la cabecera:
 
 
 \section{Ejercicio 2.}
-Considerar la función $E(u, v) = \left( u \cdot v \cdot e^{ −u^2 −v^2 } \right) ^2$
-Usar gradiente descendente para encontrar un mmínimo de esta función, comenzando
+Considerar la función $E(u, v) = \left( u v \cdot e^{ −u^2 −v^2 } \right) ^2$
+Usar gradiente descendente para encontrar un mínimo de esta función, comenzando
 desde el punto $(u, v) = (0.5, -0.5)$ y usando una tasa de aprendizaje $\eta = 0,1$.
 
-\subsection{Cálculo análitico de $\nabla E(u, v)$.}
+\subsection{Cálculo análitico de \texorpdfstring{$\nabla E(u, v)$}{Lg}}
 
+Hallamos la primera derivada parcial: 
 
-\begin{equation*}
+\begin{equation}
 \begin{aligned}
-  \frac{\partial{E}}{\partial u}(u,v) = 2 \cdot (u \cdot v \cdot e^{-u^2 - v^2}) 
-  \cdot v \frac{\partial}{\partial u} \left( u \cdot e^{-u^2 - v^2} \right) = \\
-  = 2(u\cdot v\cdot e^{-u^2 - v^2}) \cdot v \left[ e^{-u^2 - v^2} + u\cdot e^{-u^2 - v^2} \cdot 2(-u) \right] = \\
-  = 2uv^2e^{2(-u^2-v^2)} - 4u^3v^2e^{2(-u^2-v^2)} = \\
-  = -2u (2u^2 - 1) v^2 e^{-2(u^2+v^2)}
+  \frac{\partial{E}}{\partial u}(u,v) = 2uve^{-u^2 - v^2} \cdot v \left[ e^{-u^2 - v^2} + u\cdot e^{-u^2 - v^2} \cdot 2(-u) \right] = \\
+  = 2uv^2e^{2(-u^2-v^2)} - 4u^3v^2e^{2(-u^2-v^2)} = -2u (2u^2 - 1) v^2 e^{-2(u^2+v^2)}
 \end{aligned}
-\end{equation*}
+\end{equation}
 
-Análogamente, $\frac{\partial{E}}{\partial u}(u,v) = -2v (2v^2 - 1) u^2 e^{-2(u^2+v^2)}$
-
-Y por tanto:
+Y análogamente, $\frac{\partial{E}}{\partial u}(u,v) = -2v (2v^2 - 1) u^2 e^{-2(u^2+v^2)}$. Luego, 
 \begin{equation}
   \begin{aligned}
-    \nabla{E}(u,v) = \left(\frac{\partial E}{\partial u}(u,v), \frac{\partial E}{\partial v}(u,v) \right ) = \\
-    = \left( -2u (2u^2 - 1) v^2 e^{-2(u^2+v^2)}, -2v (2v^2 - 1) u^2 e^{-2(u^2+v^2)} \right)
+    \nabla{E}(u,v) = \begin{pmatrix}
+           \frac{\partial E}{\partial u}(u,v) \\
+           \frac{\partial E}{\partial v}(u,v) 
+    \end{pmatrix}  =  \begin{pmatrix}
+          -2u (2u^2 - 1) v^2 e^{-2(u^2+v^2)} \\
+          -2v (2v^2 - 1) u^2 e^{-2(u^2+v^2)}
+    \end{pmatrix}
   \end{aligned}
 \end{equation}
 
 
-\subsection{Número de iteraciones con cota de error $10^{-8}$?}
-\subsection{Coordenadas obtenidas con cota de error $10^{-8}$}
+\subsection{Número de iteraciones con cota de error \texorpdfstring{$10^{-8}$}{Lg}}
+\subsection{Coordenadas obtenidas con cota de error \texorpdfstring{$10^{-8}$}{Lg}}
 
 Ejecutamos el algoritmo anteriormente descrito con los siguiente parámetros:
 
@@ -147,7 +150,7 @@ En la siguiente figura visualizamos el desplazamiento hacia el mínimo:
 Consideramos la función  $f(x,y) = x^2 + 2y^2 + 2 \sin (2 \pi x) \sin (\pi y)$.
 \textbf{Aplicar gradiente descendente para minimizar $f$}
 
-\subsection{Dependencia de $\eta$}
+\subsection{Dependencia de la tasa de aprendizaje}
 
 Usar como punto inicial $(x_0 = -1, y_0 = 1)$, tasa de aprendizaje $\eta = 0,01$
 y un máximo de $50$ iteraciones. Generar un gráfico de cómo desciende el valor
@@ -156,12 +159,17 @@ $\eta =0,1$, comentar las diferencias y su dependencia de $\eta$.
 
 En primer lugar, calculamos analíticamente el gradiente de $f$.
 
-\begin{equation*}
+\begin{equation}
 \begin{aligned}
-  \nabla f(x,y) = \left(\frac{\partial }{\partial x} f(x,y),  \frac{\partial }{\partial y} f(x,y)  \right) = \\
-=  \left( 2x + 4\pi sen(\pi y)cos(2\pi x),   4y + 2\pi sen(\pi x)cos(\pi y)  \right)
+  \nabla f(x,y) = \begin{pmatrix}
+  \frac{\partial }{\partial x} f(x,y) \\
+  \frac{\partial }{\partial y} f(x,y)
+  \end{pmatrix} = \begin{pmatrix}
+   2x + 4\pi sen(\pi y)cos(2\pi x) \\
+   4y + 2\pi sen(\pi x)cos(\pi y)
+  \end{pmatrix}
 \end{aligned}
-\end{equation*}
+\end{equation}
 
 En este caso la condición de parada es el máximo de iteraciones, por lo que
 que ejecutamos el algoritmo con la función de condición de parada
