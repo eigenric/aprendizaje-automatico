@@ -1,0 +1,59 @@
+\chapter{Regresión Lineal}
+
+\section{Algoritmo de la Pseudo-inversa}
+El algoritmo de la Pseudo-inversa o mínimos cuadrados ordinarios consiste
+en minimizar el error cuadrático entre la estimación $h(x) = w^T x$ y
+el vector objetivo $y$
+
+\begin{equation}
+E_{in}(h) = \frac{1}{N} \sum_{n=1}^N (h(x_n) - y_n)^2 = \frac{1}{N} \Vert Xw - y\Vert^2
+\end{equation}
+
+Basta encontrar $w$ que anule $\nabla E_{in}(w)$. Esto se verifica cuando
+$w_{lin} = X^\dagger y$ \cite{LFD}. Donde $X^\dagger = (X^T X)^{-1} X^T$ es la
+\textbf{matriz pseudo-inversa} de $X$
+
+Como el cálculo de la inversa $(X^T X)^{-1}$ puede ser costoso, aplicamos
+previamente la descomposición en valores singulares a $X$. Es decir, escribimos
+$X = U D V^T $ con $U \in \mathbb{R}^{N \times N}$, $V \in \mathbb{R}^{(d+1) \times (d+1)}$
+matrices ortogonales y $D \in \mathbb{R}^{N \times (d+1)}$ matriz diagonal rectangular.
+Entonces $X^T X = V D^T D V^T$ y la pseudo-inversa se calculará como sigue:
+
+\begin{equation}
+\begin{aligned}
+X^\dagger = (X^T X)^{-1} X^T = (V D^T D V^T)^{-1} V D^T U^T = \\
+= V (D^T D)^{-1} V^T V D^T U^T= V (D^T D)^{-1} D^T U^T = V D^\dagger U^T
+\end{aligned}
+\end{equation}
+
+
+\section{Gradiente Descendente Estocástico}
+
+El algoritmo de gradiente descendente estocástico (SGD) es una versión secuencial
+del algoritmo de gradiente descendente descrito en el primer capítulo.
+En esta versión, usamos sólo una parte de la muestra para calcular el
+gradiente. Para ello, dividimos la muestra aleatoriamente en
+\textbf{mini-batches}. Recorreremos esta secuencia de lotes, actualizando los
+pesos en cada mini-batch de manera que sólo uno participa en cada actualización.
+
+Formalmente, para cada mini-batch $B_i$ 
+
+\begin{equation*}
+  \frac{\partial E_{in}(w)}{\partial w_j} = \frac{2}{M} \sum_{n \in B_i} x_{nj} (h(x_n) - y_n)
+\end{equation*}
+
+\section{Ejercicio 1}
+
+Este ejercicio ajusta modelos de regresión a vectores de características
+extraídos a partir de imágenes de dígitos manuscritos. En particular, se
+extraen dos características concretas que miden el valor medio del nivel de
+gris y la simetría del dígito respecto de su eje vertical. Solo se
+seleccionaran para este ejercicio las imágenes de los números 1 y 5.
+
+Estimar un modelo de regresión lineal, a partir de los datos proporcionados
+por los vectores de características dados, usando tanto el algoritmo de la
+pseudo-inversa como el gradiente descendente estocástico (SGD). Las etiquetas
+serán {-1,1}, una por cada vector de cada uno de los números. Pintar las
+soluciones obtenidas junto con los datos usados en el ajuste. Valorar la
+bondad del resultado usando $E_{in}$ y $E_{out}$ (para $E_{out}$ calcular las
+predicciones usando los datos del fichero de test).
