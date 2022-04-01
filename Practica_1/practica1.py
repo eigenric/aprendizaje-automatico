@@ -3,6 +3,7 @@ TRABAJO 1.
 Nombre Estudiante: Ricardo Ruiz Fernández de Alba
 """
 
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -363,7 +364,9 @@ def sgd(x, y, lr, epsilon, max_iters, stop_cond, batch_size=32, hist=False):
 
         # Sólo un mini-batch participa en la adaptación
         w = w - lr*dMSE(x[batch_ids, :], y[batch_ids], w)
-        w_err = MSE(x[batch_ids, :], y[batch_ids], w)
+        err = MSE(x[batch_ids, :], y[batch_ids], w)
+        if isinstance(err, list): print("UNA LISTA!")
+        w_err.append(err)
 
         it += 1
         batch_start += batch_size
@@ -386,7 +389,11 @@ def sgd_maxIter(x, y, lr, max_iters, epsilon=None, batch_size=32, hist=False):
 def sgd_error(x, y, lr, epsilon, max_iters=None, batch_size=32, hist=False):
     """Gradiente descendiente estocástico con condición de parada por error"""
 
-    stop_cond_error = lambda _, __, w_err, epsilon, ___: w_err <= epsilon
+    # stop_cond_error = lambda _, __, w_err, epsilon, ___: sum(w_err)/len(w_err) <= epsilon
+    def stop_cond_error(it, __, w_err, epsilon, ___): 
+        mean_w_err = sum(w_err)/len(w_err)
+        print(f"it {it}: {mean_w_err}")
+        return mean_w_err <= epsilon
 
     return sgd(x, y, lr, epsilon, max_iters, stop_cond_error, batch_size=batch_size, hist=hist)
 
@@ -427,9 +434,18 @@ def regresion_pinv(x, y):
 
     return pseudoinverse(x) @ y
 
-def plot_regression():
-    ""
-    # TODO
+def plot_regression(x, y, ws, xlabel, ylabel):
+    """
+    Grafica los puntos junto con las distintas rectas de regresión asociadas
+    que definen los vectores de pesos
+
+    :param x: Matriz de datos de entrada
+    :param y: Vector objetivo
+    :param ws: Vector de pesos 
+    :param xlabel: Nombre eje X
+    :param ylabel: Nombre eje Y
+    """
+
     pass
 
 # Lectura de los datos de entrenamiento
@@ -438,8 +454,11 @@ x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 eta = 0.01
-ws_sgd, it = sgd_maxIter(x, y, eta, max_iters=5_000, hist=True)
-ws_sgd2, it2 = sgd_maxIter(x, y, eta, max_iters=50_000, hist=True)
+epsilon = 1e-14
+maxit1, maxit2 = 500, 200_000_000
+ws_sgd, it = sgd_maxIter(x, y, eta, max_iters=maxit1, hist=True)
+ws_sgd2, it2 = sgd_maxIter(x, y, eta, max_iters=maxit2, hist=True)
+#ws_sgd2, it2 = sgd_error(x, y, eta, epsilon, hist=True)
 w_pinv = regresion_pinv(x, y)
 
 ein_sgd = MSE(x, y, ws_sgd[-1])
@@ -452,11 +471,11 @@ eout_pinv = MSE(x_test, y_test, w_pinv)
 
 print ('Bondad del resultado para grad. descendente estocastico:\n')
 
-print("Para 5_000 iteraciones: ")
+print(f"Para {maxit1} iteraciones: ")
 print(f"\tEin: {ein_sgd}")
 print(f"\tEout: {eout_sgd}")
 
-print("Para 50_000 iteraciones: ")
+print(f"Para {maxit2} iteraciones: ")
 print(f"\t Ein: {ein_sgd2}")
 print(f"\t Eout: {eout_sgd2}")
 
@@ -464,7 +483,41 @@ print("Pseudoinversa")
 print(f"\t Ein: {ein_pinv}")
 print(f"\t Eout: {eout_pinv}")
 
+fig, ax = plt.subplots()
 
+# Map entre etiquetas y número correspondientes
+label_number_map = {-1: "Número 1", 1 : "Número 5"}
+color_cycle = itertools.cycle(["blue", "orange", "brown", "red", "green"])
+
+for label, number in label_number_map.items():
+    # Filtramos los elementos de x de la clase label
+    x_cls = x[y == label]
+    ax.scatter(x_cls[:, 1], x_cls[:, 2], s=5, alpha=0.5, color=next(color_cycle),
+               label=number)
+
+# Fijamos los límites de los ejes para cuadrar con el mínimo y el máximo
+minmax = lambda arr: (np.min(arr), np.max(arr))
+x1_min, x1_max = minmax(x[:, 1])
+x2_min, x2_max = minmax(x[:, 2])
+ax.set_xlim(x1_min, x1_max)
+ax.set_ylim(x2_min, x2_max)
+
+pesos = {f"SGD con {maxit1} iteraciones" : ws_sgd[-1],
+         f"SGD con {maxit2} iteraciones" : ws_sgd2[-1],
+          "Pseudoinversa" : w_pinv }
+
+# Pintar la línea (hiperplano) que define cada array de pesos
+for w_label, w in pesos.items():
+    x1_ar = np.array([x1_min, x1_max])
+    # Si w0 + w1x1 + w2x2 = 0 => x2 = -1*(w1*x1 + w0)/w2
+    x2_line = -1*(w[1]*x1_ar + w[0]) / w[2]
+    ax.plot(x1_ar, x2_line, label=w_label)
+
+ax.legend()
+plt.xlabel("Intensidad media")
+plt.ylabel("Simetría")
+print("2-1) Gráfica que compara intensidad media y simetría ")
+plt.show()
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
