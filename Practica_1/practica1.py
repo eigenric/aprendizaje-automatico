@@ -455,10 +455,10 @@ x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
 
 eta = 0.01
 epsilon = 1e-14
-maxit1, maxit2 = 500, 200_000_000
+maxit1, maxit2 = 500, 20_000
 ws_sgd, it = sgd_maxIter(x, y, eta, max_iters=maxit1, hist=True)
-ws_sgd2, it2 = sgd_maxIter(x, y, eta, max_iters=maxit2, hist=True)
-#ws_sgd2, it2 = sgd_error(x, y, eta, epsilon, hist=True)
+#ws_sgd2, it2 = sgd_maxIter(x, y, eta, max_iters=maxit2, hist=True)
+ws_sgd2, it2 = sgd_error(x, y, eta, epsilon, hist=True)
 w_pinv = regresion_pinv(x, y)
 
 ein_sgd = MSE(x, y, ws_sgd[-1])
