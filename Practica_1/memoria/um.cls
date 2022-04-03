@@ -47,6 +47,7 @@
 \usepackage[shortlabels]{enumitem}
 \usepackage[makeroom]{cancel}
 \DeclareUnicodeCharacter{2212}{-}
+\spanishdecimal{.}
 
 %% Color de sintaxis
 \usepackage{minted}
@@ -106,7 +107,7 @@
 \setlrmarginsandblock{3.7cm}{2.5cm}{*}           % Set the page margins (for one and two sided docs) 
 \checkandfixthelayout                            % Put layout into effect
 
-\graphicspath{{./images/}}                       % Where to look for images (paths) ...
+\graphicspath{{./images/}{./chap1/images}{./chap2/images}}                       % Where to look for images (paths) ...
 \DeclareGraphicsExtensions{.pdf,.jpeg,.png,.jpg} % Graphics extensions to load
 
 \chapterstyle{ell} % how to draw the different chapter headings

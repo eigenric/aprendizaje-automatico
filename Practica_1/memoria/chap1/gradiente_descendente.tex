@@ -3,15 +3,13 @@
 \section{Descenso de gradiente}
 
 El algoritmo de descenso de gradiente es una técnica general para minimizar
-funciones diferenciables. Dependiendo del punto de inicio, se puede llegar a un
-mínimo local o global. Si la función es convexa, puede converger al mínimo
-global. 
+funciones diferenciables. Es un algoritmo iterativo basado en el cálculo del
+gradiente de la función, y la actualización de cierto vector de pesos.
 
-\medskip
-\section{Formalización Matemática}
-Sea $w(0) \in \mathbb{R}^d$ un punto inicial, y $E : \mathbb{R}^d \longrightarrow \mathbb R$
+Formalmente, sea $w(0) \in \mathbb{R}^d$ un punto inicial, y 
+$E : \mathbb{R}^d \longrightarrow \mathbb R$
 una función diferenciable. Sea $\eta \in \mathbb{R}^+$. La actualización del peso en 
-la t-ésima iteración viene definida por 
+la $t$-ésima iteración viene definida por 
 
 \begin{equation*}
   w(t+1) = w(t) - \eta \nabla E_{in}(w(t))
@@ -132,8 +130,8 @@ La condición de parada fijada es que la función de error alcance un valor
 menor o igual a $10^{-8}$, que se indica en \mintinline{python}{stop_cond_error}
 
 \begin{itemize}
-\item Numero de iteraciones: 25117
-\item Coordenadas obtenidas: $(0.0100 ,  -0.0100)$
+\item Numero de iteraciones: $25117$
+\item Coordenadas obtenidas: $(0.0100, -0.0100)$
 \end{itemize}
 
 
@@ -141,7 +139,7 @@ En la siguiente figura visualizamos el desplazamiento hacia el mínimo:
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.5]{Figure_1.png}
+\includegraphics[width=0.5\textwidth]{Figure_1.png}
 \caption{Descenso de gradiente sobre E}
 \end{figure}
 
@@ -190,7 +188,7 @@ son $(-1.2178, 0.4134)$ donde $f$ toma el valor $-0.0623$
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.6]{Figure_2.png}
+\includegraphics[width=0.6\textwidth]{Figure_2.png}
 \caption{Descenso del gradiente sobre f con $\eta=0.01$}
 \end{figure}
 
@@ -199,7 +197,7 @@ $(-0.1155, 0.1610)$ y visualizamos el descenso en la siguiente figura:
 
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.6]{Figure_3.png}
+\includegraphics[scale=0.75]{Figure_3.png}
 \caption{Descenso del gradiente sobre f con $\eta=0.1$}
 \end{figure}
 
@@ -214,7 +212,7 @@ $\eta=0.01$ quedan reflejadas en la siguiente figura.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[scale=0.6]{Figure_4.png}
+  \includegraphics[width=0.6\textwidth]{Figure_4.png}
   \caption{Comparación de $f(x,y)$ para $\eta=0.01$ y $\eta=0.1$}
 \end{figure}
 
@@ -241,32 +239,32 @@ $\eta = 0.1$). Comentar la dependencia del punto inicial.
 \begin{table}[!ht]
     \caption {Valor mínimo para $\eta = 0.1$} \label{tab:title} 
     \centering
-    \begin{tabular}{|l|l|l|}
-    \hline
-        Punto inicial & Coordenadas mínimo & Valor mínimo f(x,y) \\ \hline
-        (-0.5, -0.5) & (0.2848,-0.5553) & -1.2250 \\ \hline
-        (1, 1) & (0.3018,-0.4257) & -1.3902 \\ \hline
-        (2.1, -2.1) & (-0.2320,0.2831) & -1.3293 \\ \hline
-        (-3, 3) & (0.1816,-0.3152) & -1.2883 \\ \hline
-        (-2, 2) & (0.2428,-0.3121) & -1.4061 \\ \hline
+    \begin{tabular}{lll}
+    \toprule
+        Punto inicial & Coordenadas mínimo & Valor mínimo f(x,y) \\ \midrule
+        (-0.5, -0.5) & (0.2848,-0.5553) & -1.2250 \\
+        (1, 1) & (0.3018,-0.4257) & -1.3902 \\ 
+        (2.1, -2.1) & (-0.2320,0.2831) & -1.3293 \\
+        (-3, 3) & (0.1816,-0.3152) & -1.2883 \\
+        (-2, 2) & (0.2428,-0.3121) & -1.4061 \\ \bottomrule
     \end{tabular}
 \end{table}
 
 \begin{table}[!ht]
     \caption {Valor mínimo para $\eta = 0.01$} \label{tab:title2} 
     \centering
-    \begin{tabular}{|l|l|l|}
-    \hline
-        Punto inicial & Coordenadas mínimo & Valor mínimo f(x,y) \\ \hline
-        (-0.5, -0.5) & (-0.7308,-0.4144) & -1.0366 \\ \hline
-        (1, 1) & (0.7308,0.4144) & -1.0366 \\ \hline
-        (2.1, -2.1) & (1.6651,-1.1728) & 4.6338 \\ \hline
-        (-3, 3) & (-2.1888,0.5868) & 3.6942 \\ \hline
-        (-2, 2) & (-1.6643,1.1713) & 4.6337 \\ \hline
+    \begin{tabular}{lll}
+    \toprule
+        Punto inicial & Coordenadas mínimo & Valor mínimo f(x,y) \\ \midrule
+        (-0.5, -0.5) & (-0.7308,-0.4144) & -1.0366 \\ 
+        (1, 1) & (0.7308,0.4144) & -1.0366 \\ 
+        (2.1, -2.1) & (1.6651,-1.1728) & 4.6338 \\ 
+        (-3, 3) & (-2.1888,0.5868) & 3.6942 \\ 
+        (-2, 2) & (-1.6643,1.1713) & 4.6337 \\ \bottomrule
     \end{tabular}
 \end{table}
 
-Es claro a partir de estos datos que el algoritmo de gradiente descendiente tiende
+Es claro a partir de estos datos que el algoritmo de gradiente Descendente tiende
 hacia un mínimo local que dependerá del punto inicial. En general, en este caso,
 la tasa de aprendizaje mayor $\eta=0.1$ proporciona un valor mínimo más regular
 (en torno a $-1.25$) que la tasa $\eta=0.01$. 
@@ -277,7 +275,7 @@ la tasa de aprendizaje mayor $\eta=0.1$ proporciona un valor mínimo más regula
 global de una función arbitraria?}
 
 A partir del experimento anterior, confirmamos empíricamente que el mínimo local
-que encuentra el algoritmo de gradiente descendiente depende fuertemente tanto
+que encuentra el algoritmo de gradiente Descendente depende fuertemente tanto
 del punto inicial como de la tasa de aprendizaje. No podemos garantizar que este
 mínimo sea global a no ser que la función sea convexa. Esto último sucede en los casos
 de la función de error cuadrático medio de la regresión lineal así como en el 
