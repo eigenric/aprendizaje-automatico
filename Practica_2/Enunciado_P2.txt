@@ -1,0 +1,101 @@
+Práctica 2 - Aprendizaje Automático
+Complejidad de H y Modelos Lineales
+
+1. EJERCICIO SOBRE LA COMPLEJIDAD DE H Y EL RUIDO (5 puntos)
+En este ejercicio debemos aprender la dificultad que introduce la aparición de ruido en las etiquetas
+a la hora de elegir la clase de funciones más adecuada. Haremos uso de tres funciones incluidas en
+el fichero template trabajo2.py:
+simula unif (N, dim, rango), que calcula una lista de N vectores de dimensión dim. Cada
+vector contiene dim números aleatorios uniformes en el intervalo rango.
+simula gauss(N, dim, sigma), que calcula una lista de longitud N de vectores de dimensión
+dim, donde cada posición del vector contiene un número aleatorio extraı́do de una distribucción
+Gaussiana de media 0 y varianza dada, para cada dimension, por la posición del vector sigma.
+simula recta(intervalo), que simula de forma aleatoria los parámetros, v = (a, b) de una
+recta, y = ax + b, que corta al cuadrado [−50, 50] × [−50, 50].
+1. (1 punto) Dibujar gráficas con las nubes de puntos simuladas con las siguientes condiciones:
+a) Considere N = 50, dim = 2, rango = [−50, 50] con simula unif (N, dim, rango).
+b) Considere N = 50, dim = 2 y sigma = [5, 7] con simula gauss(N, dim, sigma).
+2. Vamos a valorar la influencia del ruido en la selección de la complejidad de la clase de funciones.
+Con ayuda de la función simula unif (100, 2, [−50, 50]) generamos una muestra de puntos 2D
+a los que vamos añadir una etiqueta usando el signo de la función f (x, y) = y − ax − b, es
+decir el signo de la distancia de cada punto a la recta simulada con simula recta().
+a) (1 punto) Dibujar un gráfico 2D donde los puntos muestren (use colores) el resultado de
+su etiqueta. Dibuje también la recta usada para etiquetar. Observe que todos los puntos
+están bien clasificados respecto de la recta.
+b) (0.5 puntos) Modifique de forma aleatoria un 10 % de las etiquetas positivas y otro 10 %
+de las negativas y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo la gráfica
+anterior. Ahora habrá puntos mal clasificados respecto de la recta.
+c) (2.5 puntos) Supongamos ahora que las siguientes funciones definen la frontera de clasificación de los puntos de la muestra en lugar de una recta
+f (x, y) = (x − 10)2 + (y − 20)2 − 400
+f (x, y) = 0,5(x + 10)2 + (y − 20)2 − 400
+f (x, y) = 0,5(x − 10)2 − (y + 20)2 − 400
+f (x, y) = y − 20x2 − 5x + 3
+Visualizar el etiquetado generado en el apartado 2b junto con la gráfica de cada una
+de las funciones. Comparar las regiones positivas y negativas de estas nuevas funciones
+con las obtenidas en el caso de la recta. Argumente si estas funciones más complejas son
+mejores clasificadores que la función lineal. Observe las gráficas y diga qué consecuencias
+extrae sobre la influencia de la modificación de etiquetas en el proceso de aprendizaje.
+Explique el razonamiento.
+2
+
+2. MODELOS LINEALES (7 puntos)
+1. (3 puntos) Algoritmo Perceptrón (PLA).
+Implementar la función ajusta P LA(datos, label, max iter, vini) que calcula el hiperplano
+solución a un problema de clasificación binaria usando el algoritmo PLA. La entrada datos es
+una matriz donde cada item con su etiqueta está representado por una fila de la matriz, label
+el vector de etiquetas (cada etiqueta es un valor +1 o -1), max iter es el número máximo de
+iteraciones permitidas y vini el valor inicial del vector. La función devuelve los coeficientes
+del hiperplano.
+a) Ejecutar el algoritmo PLA con los datos empleados en el apartado 2a del ejercicio 1.
+Inicializar el algoritmo con: i) el vector cero y, ii) con vectores de números aleatorios en [0,
+1] (10 veces). Anotar el número medio de iteraciones necesarias en ambos para converger.
+Se deben mostrar en una tabla cada uno de los pesos iniciales empleados, los finales
+(obtenidos tras el proceso de entrenamiento), y el porcentaje de error de clasificación.
+Valorar el resultado relacionando el punto de inicio con el número de iteraciones.
+b) Hacer lo mismo usando los datos del apartado 2b del ejercicio 1. ¿Observa algún comportamiento diferente? En caso afirmativo diga cuál y las razones para que ello ocurra.
+2. (4 puntos) Regresión Logı́stica (RL).
+En este ejercicio emplearemos nuestra propia función objetivo f y un conjunto de datos D
+para ver cómo funciona regresión logı́stica. Consideraremos d = 2 para que los datos sean
+fácilmente visualizables, y emplearemos X = [0, 2] × [0, 2] con probabilidad uniforme de elegir
+cada x ∈ X . Elegir una lı́nea en el plano que pase por X como la frontera que separa la región
+en donde y toma valores +1 y -1. Para ello, seleccionar dos puntos aleatorios de X y calcular
+la lı́nea que pasa por ambos.
+Impleméntese RL con Gradiente Descendente Estocástico (SGD) del siguiente modo:
+Inicializar el vector de pesos con valores 0.
+Parar el algoritmo cuando ∥w(t+1) − w(t) ∥ < 0,01, donde w(t) denota el vector de pesos
+al final de la época t. Recuérdese que una época es un pase completo a través de los N
+ejemplos de nuestro conjunto de datos.
+Aplicar una permutación aleatoria de {1, 2,..., N} a los ı́ndices de los datos, antes de
+usarlos en cada época del algoritmo.
+A continuación, empleando la implementación anterior, realı́cese el siguiente experimento:
+Seleccione N = 100 puntos aleatorios {xn } de X y evalúe las respuestas {yn } de todos
+ellos respecto de la frontera elegida.
+Ejecute RL para encontrar la función solución g, y evalúe el error Eout usando para
+ello una nueva muestra de datos (> 999). Se debe escoger experimentalmente tanto el
+learning rate (tasa de aprendizaje η) como el tamaño de batch.
+Repita el experimento 100 veces, y calcule los valores promedio de Eout , de porcentaje
+de error de clasificación, y de épocas necesarias para converger.
+
+3
+
+3. BONUS (1.5 puntos)
+El BONUS solo se tendrá en cuenta si se ha obtenido al menos el 75 % de los puntos de la parte
+obligatoria.
+Clasificación de Dı́gitos. Considerar el conjunto de datos de dı́gitos manuscritos, y seleccionar
+las muestras de los dı́gitos 4 y 8. Extraer las caracterı́sticas de intensidad promedio y simetrı́a en
+la manera que se indicó en el ejercicio 3 de la práctica anterior.
+1. Plantear un problema de clasificación binaria que considere el conjunto de entrenamiento como
+datos de entrada para aprender la función g.
+2. Compárense los modelos de regresión lineal, PLA, RL y PLA-Pocket.
+a) Generar gráficos separados de los datos de entrenamiento y test junto con la función
+estimada.
+b) Calcular Ein y Etest (error sobre los datos de test).
+c) Si se emplean los pesos obtenidos con regresión lineal para inicializar los otros tres métodos (RL, PLA, PLA-pocket), ¿se observa alguna mejora en los resultados a algún nivel?
+Justifique su respuesta.
+d) Obtener cotas sobre el verdadero valor de Eout para los cuatro métodos empleados.
+Calcúlense dos cotas: una basada en Ein y otra basada en Etest . Usar una tolerancia
+δ = 0,05. ¿Que cota es mejor? Justifique la respuesta.
+
+4
+
+
