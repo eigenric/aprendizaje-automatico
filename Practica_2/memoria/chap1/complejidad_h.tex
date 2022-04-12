@@ -1,46 +1,50 @@
-\chapter{Ejercicio sobre la complejidad de h y el ruido}
+\chapter{Sobre la complejidad de H y el ruido}
 
 En este ejercicio debemos aprender la dificultad que introduce la aparición de
 ruido en las etiquetas a la hora de elegir la clase de funciones más adecuada.
-Haremos uso de tres funciones incluidas en
-el fichero template trabajo2.py:
+Haremos uso de tres funciones incluidas en el fichero template trabajo2.py:
 
 \begin{itemize}
 
-\item \mintinline{python}{simula_unif(N, dim, rango)}: calcula una lista de N vectores de dimensión
-dim. Cada vector contiene dim números aleatorios uniformes en el intervalo
-rango. 
+\item \mintinline{python}{simula_unif(N, dim, rango)}: calcula una lista de $N$
+vectores de dimensión dim. Cada vector contiene dim números aleatorios uniformes
+en el intervalo rango. 
 
 \item \mintinline{python}{simula_gauss(N, dim, sigma)}: calcula una lista de
-longitud N de vectores de dimensión dim, donde cada posición del vector contiene
-un número aleatorio extraído de una distribucción Gaussiana de media $0$ y
-varianza dada, para cada dimension, por la posición del vector sigma.  
+longitud $N$ de vectores de dimensión dim, donde cada posición del vector
+contiene un número aleatorio extraído de una distribución Gaussiana de media
+$0$ y varianza dada, para cada dimension, por la posición del vector sigma.  
 
-\item \mintinline{python}{simula_recta(intervalo)}: que simula de forma
-aleatoria los parámetros, $v = (a, b)$ de una recta, $y = ax + b$, que corta al
-cuadrado $[−50, 50] \times [−50, 50]$.
+\item \mintinline{python}{simula_recta(intervalo)}: simula de forma aleatoria
+los parámetros, $v = (a, b)$ de una recta, $y = ax + b$, que corta al cuadrado
+$[-50, 50] \times [-50, 50]$.
+
+\end{itemize}
 
 \section{Ejercicio 1}
-\textbf{Dibujar gráficas con las nubes de puntos simuladas con las siguientes
-condiciones:}
+Dibujar gráficas con las nubes de puntos simuladas con las siguientes
+condiciones
 
-\subsection{simula_unif}
-\textbf{Considere $N = 50$, $dim = 2$, $rango = [−50, 50]$ con 
-\mintinline{python}{simula_unif (N, dim, rango)}}
+\subsection{simula\_unif}
+
+Considere $N = 50$, $\dim = 2$, $rango = [-50, 50]$ con  
+\mintinline{python}{simula_unif (N, dim, rango)}
 
 
-\subsection{simula_gauss}
+\subsection{simula\_gauss}
+
 \textbf{Considere $N = 50$, $dim = 2$ y $sigma = [5, 7]$ con 
 \mintinline{python}{simula_gauss(N, dim, sigma)}}
 
+\end{itemize}
 
 \section{Ejercicio 2}
 
 Vamos a valorar la influencia del ruido en la selección de la complejidad de la
 clase de funciones.  Con ayuda de la función
-\mintinline{python}{simula_unif(100, 2, [−50, 50])} generamos una muestra de
+\mintinline{python}{simula_unif(100, 2, [-50, 50])} generamos una muestra de
 puntos 2D a los que vamos añadir una etiqueta usando el signo de la función 
-$f(x, y) = y − ax − b$, es decir el signo de la distancia de cada punto a la
+$f(x, y) = y - ax - b$, es decir el signo de la distancia de cada punto a la
 recta simulada con \mintinline{python}{simula_recta()}.  
 
 \subsection{Dibujo de puntos con etiqueta y recta usada}
@@ -53,7 +57,7 @@ puntos están bien clasificados respecto de la recta.
 
 Modifique de forma aleatoria un $10\%$ de las etiquetas positivas y otro $10\%$
 de las negativas y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo
-la gráfica anterior. Ahora habrá puntos mal clasificados respecto de la recta.  
+la gráfica anterio. Ahora habrá puntos mal clasificados respecto de la recta.  
 
 
 \subsection{Otras fronteras de clasificación}
@@ -62,18 +66,16 @@ Supongamos ahora que las siguientes funciones definen la frontera de
 clasificación de los puntos de la muestra en lugar de una recta 
 
 \begin{itemize}
-    
-\item $f(x,y) = (x − 10)^2 + (y − 20)^2 − 400$
-\item $f(x,y) = 0.5(x + 10)^2 + (y − 20)^2 − 400$
-\item $f(x,y) = 0.5(x − 10)^2 − (y + 20)^2 − 400$
-\item $f(x,y) = y − 20x^2 − 5x + 3$
+\item $f(x,y) = (x - 10)^2 + (y - 20)^2 - 400$
+\item $f(x,y) = 0.5(x + 10)^2 + (y - 20)^2 - 400$
+\item $f(x,y) = 0.5(x - 10)^2 - (y + 20)^2 - 400$
+\item $f(x,y) = y - 20x^2 - 5x + 3$
+\end{itemize}
 
 Visualizar el etiquetado generado en el apartado 2b junto con la gráfica de cada
-una de las funciones. 
-Comparar las regiones positivas y negativas de estas nuevas funciones con las
-obtenidas en el caso de la recta. 
-Argumente si estas funciones más complejas son
-mejores clasificadores que la función lineal.
+una de las funciones.  Comparar las regiones positivas y negativas de estas
+nuevas funciones con las obtenidas en el caso de la recta.  Argumente si estas
+funciones más complejas son mejores clasificadores que la función lineal.
 Observe las gráficas y diga qué consecuencias extrae sobre la influencia de la
-modificación de etiquetas en el proceso de aprendizaje.  
-Explique el razonamiento. 
+modificación de etiquetas en el proceso de aprendizaje. Explique el
+razonamiento. 

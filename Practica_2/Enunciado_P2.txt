@@ -11,13 +11,13 @@ simula gauss(N, dim, sigma), que calcula una lista de longitud N de vectores de 
 dim, donde cada posición del vector contiene un número aleatorio extraı́do de una distribucción
 Gaussiana de media 0 y varianza dada, para cada dimension, por la posición del vector sigma.
 simula recta(intervalo), que simula de forma aleatoria los parámetros, v = (a, b) de una
-recta, y = ax + b, que corta al cuadrado [−50, 50] × [−50, 50].
+recta, y = ax + b, que corta al cuadrado [-50, 50] × [-50, 50].
 1. (1 punto) Dibujar gráficas con las nubes de puntos simuladas con las siguientes condiciones:
-a) Considere N = 50, dim = 2, rango = [−50, 50] con simula unif (N, dim, rango).
+a) Considere N = 50, dim = 2, rango = [-50, 50] con simula unif (N, dim, rango).
 b) Considere N = 50, dim = 2 y sigma = [5, 7] con simula gauss(N, dim, sigma).
 2. Vamos a valorar la influencia del ruido en la selección de la complejidad de la clase de funciones.
-Con ayuda de la función simula unif (100, 2, [−50, 50]) generamos una muestra de puntos 2D
-a los que vamos añadir una etiqueta usando el signo de la función f (x, y) = y − ax − b, es
+Con ayuda de la función simula unif (100, 2, [-50, 50]) generamos una muestra de puntos 2D
+a los que vamos añadir una etiqueta usando el signo de la función f (x, y) = y - ax - b, es
 decir el signo de la distancia de cada punto a la recta simulada con simula recta().
 a) (1 punto) Dibujar un gráfico 2D donde los puntos muestren (use colores) el resultado de
 su etiqueta. Dibuje también la recta usada para etiquetar. Observe que todos los puntos
@@ -26,10 +26,10 @@ b) (0.5 puntos) Modifique de forma aleatoria un 10 % de las etiquetas positivas 
 de las negativas y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo la gráfica
 anterior. Ahora habrá puntos mal clasificados respecto de la recta.
 c) (2.5 puntos) Supongamos ahora que las siguientes funciones definen la frontera de clasificación de los puntos de la muestra en lugar de una recta
-f (x, y) = (x − 10)2 + (y − 20)2 − 400
-f (x, y) = 0,5(x + 10)2 + (y − 20)2 − 400
-f (x, y) = 0,5(x − 10)2 − (y + 20)2 − 400
-f (x, y) = y − 20x2 − 5x + 3
+f (x, y) = (x - 10)2 + (y - 20)2 - 400
+f (x, y) = 0,5(x + 10)2 + (y - 20)2 - 400
+f (x, y) = 0,5(x - 10)2 - (y + 20)2 - 400
+f (x, y) = y - 20x2 - 5x + 3
 Visualizar el etiquetado generado en el apartado 2b junto con la gráfica de cada una
 de las funciones. Comparar las regiones positivas y negativas de estas nuevas funciones
 con las obtenidas en el caso de la recta. Argumente si estas funciones más complejas son
@@ -62,7 +62,7 @@ en donde y toma valores +1 y -1. Para ello, seleccionar dos puntos aleatorios de
 la lı́nea que pasa por ambos.
 Impleméntese RL con Gradiente Descendente Estocástico (SGD) del siguiente modo:
 Inicializar el vector de pesos con valores 0.
-Parar el algoritmo cuando ∥w(t+1) − w(t) ∥ < 0,01, donde w(t) denota el vector de pesos
+Parar el algoritmo cuando ∥w(t+1) - w(t) ∥ < 0,01, donde w(t) denota el vector de pesos
 al final de la época t. Recuérdese que una época es un pase completo a través de los N
 ejemplos de nuestro conjunto de datos.
 Aplicar una permutación aleatoria de {1, 2,..., N} a los ı́ndices de los datos, antes de

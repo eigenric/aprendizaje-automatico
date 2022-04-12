@@ -124,12 +124,12 @@ En este apartado exploramos cómo se transforman los errores $E_{in}$ y $E_{out}
 cuando aumentamos la complejidad del modelo lineal usado. Ahora hacemos uso de
 la función \mintinline{python}{simula_unif(N, 2, size)} que nos devuelve $N$
 coordenadas 2D de puntos uniformemente muestreados dentro del cuadrado definido
-por  $[−size,size] \times [−size, size]$. Se debe realizar el siguiente experimento:
+por  $[-size,size] \times [-size, size]$. Se debe realizar el siguiente experimento:
 
 \subsection{Generar muestra de entrenamiento}
 
 \textbf{Generar una muestra de entrenamiento de $N = 1000$ puntos en el cuadrado
-$\chi = [−1, 1] \times [−1, 1].$ Pintar el mapa de puntos 2D.}
+$\chi = [-1, 1] \times [-1, 1].$ Pintar el mapa de puntos 2D.}
 
 \begin{figure}[H]
 \centering
@@ -140,7 +140,7 @@ $\chi = [−1, 1] \times [−1, 1].$ Pintar el mapa de puntos 2D.}
 
 \subsection{Etiquetado de la muestra}
 
-Consideremos la función $f(x_1, x_2) = sign\left( (x_1 − 0,2)^2 + x_2^2 − 0,6 \right)$ 
+Consideremos la función $f(x_1, x_2) = sign\left( (x_1 - 0,2)^2 + x_2^2 - 0,6 \right)$ 
 que usaremos para asignar una etiqueta a cada punto de la muestra anterior.
 Introducimos ruido sobre las etiquetas cambiando el signo de un 10\%
 de las mismas elegido aleatoriamente. \textbf{Pintar el mapa de etiquetas obtenido.}
