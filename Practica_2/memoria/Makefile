@@ -4,6 +4,6 @@ latex: dissertation_main.tex chap1/complejidad_h.bib chap1/complejidad_h.tex cha
 	pdflatex -shell-escape dissertation_main
 
 clean:
-	rm -r *~ _*  *.aux  *.bcf *.lof *.lot *.xml *.log *.out *.toc *.bbl *.blg *.dvi *-blx.bib *.fls *.fdb_latexmk
+	rm -r *~ _*  *.aux  *.bcf *.lof *.idx *.lot *.xml *.log *.out *.toc *.bbl *.blg *.dvi *-blx.bib *.fls *.fdb_latexmk
   
 

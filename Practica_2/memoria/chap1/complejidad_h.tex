@@ -1,40 +1,31 @@
 \chapter{Sobre la complejidad de H y el ruido}
 
-En este ejercicio debemos aprender la dificultad que introduce la aparición de
-ruido en las etiquetas a la hora de elegir la clase de funciones más adecuada.
-Haremos uso de tres funciones incluidas en el fichero template trabajo2.py:
+En este capítulo, trataremos la dificultad que introduce la aparición de
+ruido en las etiquetas a la hora de elegir la clase de funciones más adecuadas.
 
-\begin{itemize}
+\section{Dibujar gráficas de nubes de puntos simuladas}
 
-\item \mintinline{python}{simula_unif(N, dim, rango)}: calcula una lista de $N$
-vectores de dimensión dim. Cada vector contiene dim números aleatorios uniformes
-en el intervalo rango. 
+\subsection{Uniformemente distribuidos}
 
-\item \mintinline{python}{simula_gauss(N, dim, sigma)}: calcula una lista de
-longitud $N$ de vectores de dimensión dim, donde cada posición del vector
-contiene un número aleatorio extraído de una distribución Gaussiana de media
-$0$ y varianza dada, para cada dimension, por la posición del vector sigma.  
+\textbf{Considere $N = 50$, $\dim = 2$, $rango = [-50, 50]$ con
+\mintinline{python}{simula_unif(N, dim, rango)}}
 
-\item \mintinline{python}{simula_recta(intervalo)}: simula de forma aleatoria
-los parámetros, $v = (a, b)$ de una recta, $y = ax + b$, que corta al cuadrado
-$[-50, 50] \times [-50, 50]$.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{Figure_1.png}
+\caption{Gráfica de nube de puntos uniformemente distribuidos}
+\end{figure}
 
-\end{itemize}
-
-\section{Ejercicio 1}
-Dibujar gráficas con las nubes de puntos simuladas con las siguientes
-condiciones
-
-\subsection{simula\_unif}
-
-Considere $N = 50$, $\dim = 2$, $rango = [-50, 50]$ con  
-\mintinline{python}{simula_unif (N, dim, rango)}
-
-
-\subsection{simula\_gauss}
+\subsection{Siguiendo distribución gaussiana de media \texorpdfstring{$0$} y varianza dada}
 
 \textbf{Considere $N = 50$, $dim = 2$ y $sigma = [5, 7]$ con 
 \mintinline{python}{simula_gauss(N, dim, sigma)}}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{Figure_2.png}
+\caption{Gráfica de nube de puntos en distribución gaussiana.}
+\end{figure}
 
 \section{Ejercicio 2}
 
@@ -42,21 +33,37 @@ Vamos a valorar la influencia del ruido en la selección de la complejidad de la
 clase de funciones.  Con ayuda de la función
 \mintinline{python}{simula_unif(100, 2, [-50, 50])} generamos una muestra de
 puntos 2D a los que vamos añadir una etiqueta usando el signo de la función 
-$f(x, y) = y - ax - b$, es decir el signo de la distancia de cada punto a la
+$f(x, y) = y - ax - b$, es decir el signo de cada punto con respecto a la
 recta simulada con \mintinline{python}{simula_recta()}.  
 
 \subsection{Dibujo de puntos con etiqueta y recta usada}
 
-Dibujar un gráfico 2D donde los puntos muestren (use colores) el resultado de su
-etiqueta. Dibuje también la recta usada para etiquetar. Observe que todos los
-puntos están bien clasificados respecto de la recta.
+Dibujamos un gráfico 2D con los puntos clasificados por etiquetas junto
+con la recta usada para etiquetar. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{Figure_3.png}
+\caption{Etiquetado de puntos uniformemente distribuidos según recta.}
+\end{figure}
+
+Es claro que si usamos una recta para clasificar los puntos en dos etiquetas,
+estos datos está bien clasificados por esta recta.
 
 \subsection{Añadir ruido aleatorio}
 
 Modifique de forma aleatoria un $10\%$ de las etiquetas positivas y otro $10\%$
 de las negativas y guarde los puntos con sus nuevas etiquetas. Dibuje de nuevo
-la gráfica anterio. Ahora habrá puntos mal clasificados respecto de la recta.  
+la gráfica anterior. Ahora habrá puntos mal clasificados respecto de la recta.  
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{Figure_4.png}
+\caption{Nube de puntos anterior con 10\% de ruido en cada etiqueta.}
+\end{figure}
+
+En efecto, $3$ puntos con etiqueta $-1$ (rojos) ahora tienen etiqueta $1$
+(son azules). Esto es el $10\%$ del total ($27$) redondeado.
 
 \subsection{Otras fronteras de clasificación}
 

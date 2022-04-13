@@ -5,11 +5,13 @@ Nombre Estudiante: Ricardo Ruiz Fernandez de Alba
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import itertools
 
+figures = "memoria/chap1/images"
 
 # Fijamos la semilla
 np.random.seed(1)
-
 
 def simula_unif(N, dim, rango):
 	return np.random.uniform(rango[0],rango[1],(N,dim))
@@ -25,7 +27,6 @@ def simula_gauss(N, dim, sigma):
     
     return out
 
-
 def simula_recta(intervalo):
     points = np.random.uniform(intervalo[0], intervalo[1], size=(2, 2))
     x1 = points[0,0]
@@ -39,23 +40,45 @@ def simula_recta(intervalo):
     return a, b
 
 
-# EJERCICIO 1.1: Dibujar una gráfica con la nube de puntos de salida correspondiente
+###############################################################################
+
+# EJERCICIO 1.1: Dibujar una gráfica con la nube de puntos de salida
+# correspondiente
+
+print("Ejercicio 1.1 \n")
+print("Figura 1.1. Gráfica de nube de puntos uniformemente distribuidos.")
 
 x = simula_unif(50, 2, [-50,50])
-#CODIGO DEL ESTUDIANTE
 
-x = simula_gauss(50, 2, np.array([5,7]))
-#CODIGO DEL ESTUDIANTE
+fig, ax = plt.subplots()
+ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
+ax.set_xlim(-50, 50)
+ax.set_ylim(-50, 50)
+
+plt.savefig(f"{figures}/Figure_1.png", dpi=600)
+plt.show()
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
+# ###############################################################################
 
-###############################################################################
-###############################################################################
-###############################################################################
+# EJERCICIO 1.2: Dibujar una gráfica con la nube de puntos de salida
+# correspondiente
 
+print("Ejercicio 1.2 \n")
+print("Figura 1.2. Gráfica de nube de puntos distribuición gaussiana")
 
-# EJERCICIO 1.2: Dibujar una gráfica con la nube de puntos de salida correspondiente
+fig, ax = plt.subplots()
+x = simula_gauss(50, 2, np.array([5, 7]))
+ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
+plt.savefig(f"{figures}/Figure_2.png", dpi=600)
+plt.show()
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+################################################################################
+
+# EJERCICIO 2.1: Usar recta simulada para etiquetar puntos
 
 # La funcion np.sign(0) da 0, lo que nos puede dar problemas
 def signo(x):
@@ -66,15 +89,96 @@ def signo(x):
 def f(x, y, a, b):
 	return signo(y - a*x - b)
 
-#CODIGO DEL ESTUDIANTE
+print("Ejercicio 2.1 \n")
 
+def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
+                       xlabel="$x$ axis", ylabel="$y$ axis", 
+                       ax=None, figname="Figure1",
+                       legend_upper=False,):
+    """
+    Dibuja nube 2D de puntos con etiquetas y una recta.
+
+    :param x: Array de puntos (x,y)
+    :param y: Vector de etiquetas
+
+    :param a: Pendiente de la recta
+    :param b: Ordenada en el origen
+
+    :param x1_lim: Tupla mínimo y máximo valor de x1 
+    :param x2_lim: Tupla mínimo y máximo valor de x2
+
+    :param xlabel: Etiqueta del Eje X
+    :param ylabel: Etiqueta del Eje Y 
+
+    :param legend_upper: la leyenda se situa arriba si es True
+    """
+
+    if ax is None:
+        _, ax = plt.subplots()
+
+    # Pintamos los puntos de cada etiqueta con color distinto
+    colors = itertools.cycle("rbgmcyk")
+
+    for label in np.unique(y):
+        x_label = x[y == label]
+        ax.scatter(x_label[:, 0], x_label[:, 1], s=10, color=next(colors), 
+                   alpha=1, label=f"Etiqueta {label}")
+
+    # Pintamos la linea
+    step = (x1_lim[1] - x1_lim[0]) // 10
+    xs = np.linspace(x1_lim[0], x1_lim[1], step)
+    line = a*xs + b
+    line_label = f"y = {a:.2f}x + {b:.2f}"
+
+    ax.plot(xs, line, label=line_label, color="k")
+
+    if legend_upper:
+        ax.legend(bbox_to_anchor=(0,1.02,1,0.2), 
+                  loc="lower left", mode="expand", 
+                  borderaxespad=0, ncol=3)
+    else:
+        ax.legend()
+    
+    ax.set(xlabel=xlabel, ylabel=ylabel,
+           xlim=x1_lim, ylim=x2_lim)
+
+    plt.savefig(f"{figures}/{figname}.png", dpi=600)
+    plt.show()
+
+# 1.2.b. Dibujar una gráfica donde los puntos muestren el resultado de su
+# etiqueta, junto con la recta usada para ello 
+
+print("Figura 1.3. Etiquetado de puntos uniformemente distribuidos según recta.")
+points = simula_unif(100, 2, [-50, 50])
+a, b = simula_recta([-50, 50])
+y_labels = np.array([f(x, y, a, b) for x,y in points])
+
+scatter_label_line(points, y_labels, a, b, 
+                   x1_lim=(-50, 50), x2_lim=(-50, 50),
+                   figname="Figure_3", legend_upper=True)
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
-# 1.2.b. Dibujar una gráfica donde los puntos muestren el resultado de su etiqueta, junto con la recta usada para ello
-# Array con 10% de indices aleatorios para introducir ruido
+# Introducimos 10% de ruido en las etiquetas positivas y en las negativas.
 
-#CODIGO DEL ESTUDIANTE
+positivos_ids = np.where(y_labels == 1)[0]
+negativos_ids = np.where(y_labels == -1)[0]
+
+N, M = len(positivos_ids), len(negativos_ids)
+
+noise_positivo = np.random.choice(positivos_ids, size=round(0.1*N),
+                                  replace=False)
+noise_negativo = np.random.choice(negativos_ids, size=round(0.1*M),
+                                  replace=False)
+
+y_labels[noise_positivo] = -y_labels[noise_positivo]
+y_labels[noise_negativo] = -y_labels[noise_negativo]
+
+# Dibujamos de nuevo la gráfica con el ruido
+
+scatter_label_line(points, y_labels, a, b, 
+                   x1_lim=(-50, 50), x2_lim=(-50, 50),
+                   figname="Figure_4", legend_upper=True)
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -82,7 +186,8 @@ input("\n--- Pulsar tecla para continuar ---\n")
 ###############################################################################
 ###############################################################################
 
-# EJERCICIO 1.3: Supongamos ahora que las siguientes funciones definen la frontera de clasificación de los puntos de la muestra en lugar de una recta
+# EJERCICIO 1.3: Supongamos ahora que las siguientes funciones definen la
+# frontera de clasificación de los puntos de la muestra en lugar de una recta
 
 def plot_datos_cuad(X, y, fz, title='Point cloud plot', xaxis='x axis', yaxis='y axis'):
     #Preparar datos
@@ -119,7 +224,7 @@ def plot_datos_cuad(X, y, fz, title='Point cloud plot', xaxis='x axis', yaxis='y
     plt.show()
     
     
-#CODIGO DEL ESTUDIANTE
+
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -142,7 +247,8 @@ for i in range(0,10):
     pass
     #CODIGO DEL ESTUDIANTE
     
-print('Valor medio de iteraciones necesario para converger: {}'.format(np.mean(np.asarray(iterations))))
+# print('Valor medio de iteraciones necesario para converger:{}'
+        # .format(np.mean(np.asarray(iterations))))
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -216,21 +322,25 @@ x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
 
 
 #mostramos los datos
-fig, ax = plt.subplots()
-ax.plot(np.squeeze(x[np.where(y == -1),1]), np.squeeze(x[np.where(y == -1),2]), 'o', color='red', label='4')
-ax.plot(np.squeeze(x[np.where(y == 1),1]), np.squeeze(x[np.where(y == 1),2]), 'o', color='blue', label='8')
-ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TRAINING)')
-ax.set_xlim((0, 1))
-plt.legend()
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(np.squeeze(x[np.where(y == -1),1]), np.squeeze(x[np.where(y == -1),2]), 
+#         '.', color='red', label='4', markersize=4)
+# ax.plot(np.squeeze(x[np.where(y == 1),1]), np.squeeze(x[np.where(y == 1),2]), 
+#         '.', color='blue', label='8', markersize=4)
+# ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TRAINING)')
+# ax.set_xlim((0, 1))
+# plt.legend()
+# plt.show()
 
-fig, ax = plt.subplots()
-ax.plot(np.squeeze(x_test[np.where(y_test == -1),1]), np.squeeze(x_test[np.where(y_test == -1),2]), 'o', color='red', label='4')
-ax.plot(np.squeeze(x_test[np.where(y_test == 1),1]), np.squeeze(x_test[np.where(y_test == 1),2]), 'o', color='blue', label='8')
-ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TEST)')
-ax.set_xlim((0, 1))
-plt.legend()
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(np.squeeze(x_test[np.where(y_test == -1),1]), np.squeeze(x_test[np.where(y_test == -1),2]), 
+#         '.', color='red', label='4', markersize=4)
+# ax.plot(np.squeeze(x_test[np.where(y_test == 1),1]), np.squeeze(x_test[np.where(y_test == 1),2]), 
+#         '.', color='blue', label='8', markersize=4)
+# ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TEST)')
+# ax.set_xlim((0, 1))
+# plt.legend()
+# plt.show()
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
