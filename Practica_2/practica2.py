@@ -6,9 +6,10 @@ Nombre Estudiante: Ricardo Ruiz Fernandez de Alba
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from matplotlib.animation import FuncAnimation
 import itertools
 
-figures = "memoria/chap1/images"
+figures = r"memoria\chap1\images"
 
 # Fijamos la semilla
 np.random.seed(1)
@@ -55,10 +56,11 @@ ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
 ax.set_xlim(-50, 50)
 ax.set_ylim(-50, 50)
 
-plt.savefig(f"{figures}/Figure_1.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-plt.show()
+#plt.savefig(f"{figures}/Figure_1.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+#plt.show(block=True)
+plt.close()
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 # ###############################################################################
 
@@ -71,10 +73,11 @@ print("Figura 1.2. Gráfica de nube de puntos distribuición gaussiana")
 fig, ax = plt.subplots()
 x = simula_gauss(50, 2, np.array([5, 7]))
 ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
-plt.savefig(f"{figures}/Figure_2.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-plt.show()
+#plt.savefig(f"{figures}/Figure_2.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+#plt.show(block=True)
+plt.close()
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 ################################################################################
 
@@ -142,8 +145,9 @@ def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
     ax.set(xlabel=xlabel, ylabel=ylabel,
            xlim=x1_lim, ylim=x2_lim)
 
-    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-    plt.show()
+    #plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+    #plt.show(block=True)
+    plt.close()
 
 # 1.2a Dibujar una gráfica donde los puntos muestren el resultado de su
 # etiqueta, junto con la recta usada para ello 
@@ -152,13 +156,13 @@ print("Figura 1.3. Etiquetado de puntos uniformemente distribuidos según recta.
 points = simula_unif(100, 2, [-50, 50])
 a, b = simula_recta([-50, 50])
 y_labels = np.array([f(x, y, a, b) for x,y in points])
-y_original = y_labels
+y_original = y_labels.copy()
 
-scatter_label_line(points, y_labels, a, b, 
-                   x1_lim=(-50, 50), x2_lim=(-50, 50),
-                   figname="Figure_3", legend_upper=True)
+# scatter_label_line(points, y_labels, a, b, 
+                #    x1_lim=(-50, 50), x2_lim=(-50, 50),
+                #    figname="Figure_3", legend_upper=True)
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 # Introducimos 10% de ruido en las etiquetas positivas 
 # y en las negativas.
@@ -172,14 +176,16 @@ for label in (-1, 1):
 
     y_labels[noise_label] = -y_labels[noise_label]
 
+y_noise = y_labels
+
 # Dibujamos de nuevo la gráfica con el ruido
 
 print("Figura 1.4. Muestra uniforme con 10% de ruido") 
-scatter_label_line(points, y_labels, a, b, 
-                   x1_lim=(-50, 50), x2_lim=(-50, 50),
-                   figname="Figure_4", legend_upper=True)
+# scatter_label_line(points, y_labels, a, b, 
+                #    x1_lim=(-50, 50), x2_lim=(-50, 50),
+                #    figname="Figure_4", legend_upper=True)
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 ###############################################################################
 ###############################################################################
@@ -223,8 +229,9 @@ def plot_datos_cuad(X, y, fz, title='Point cloud plot',
        xlabel=xaxis, ylabel=yaxis)
     plt.title(title)
 
-    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-    plt.show()
+    #plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+    #plt.show(block=True)
+    plt.close()
     
 def fz(fn):
     """Decorador función de dos variables para aceptar matriz grid"""
@@ -254,7 +261,7 @@ f1_labels = np.array([signo(f1(x,y)) for x,y in X])
 misc_rate1 = np.count_nonzero(f1_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Circunferencia): {misc_rate1}%")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 print("Figura 1.6. Muestra clasificada por elipse f_2")
 plot_datos_cuad(X, y, fz(f2), title="Elipse", figname="Figure_6")
@@ -262,7 +269,7 @@ f2_labels = np.array([signo(f2(x,y)) for x,y in X])
 misc_rate2 = np.count_nonzero(f2_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Elipse): {misc_rate2}%")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 print("Figura 1.7. Muestra clasificada por hipérbola f_3")
 plot_datos_cuad(X, y, fz(f3), title="Hipérbola", figname="Figure_7")
@@ -270,7 +277,7 @@ f3_labels = np.array([signo(f3(x,y)) for x,y in X])
 misc_rate3 = np.count_nonzero(f3_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Hipérbola): {misc_rate3}%")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 print("Figura 1.8. Muestra clasificada por parábola f_4")
 plot_datos_cuad(X, y, fz(f4), title="Parábola", figname="Figure_8")
@@ -278,7 +285,7 @@ f4_labels = np.array([signo(f4(x,y)) for x,y in X])
 misc_rate4 = np.count_nonzero(f4_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Parábola): {misc_rate4}%")
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 ###############################################################################
 ###############################################################################
@@ -287,29 +294,191 @@ input("\n--- Pulsar tecla para continuar ---\n")
 # EJERCICIO 2.1: ALGORITMO PERCEPTRON
 
 def ajusta_PLA(datos, label, max_iter, vini):
-    #CODIGO DEL ESTUDIANTE
+    """Algoritmo de aprendizaje del Perceptrón
+    :param datos: matriz homogénea de caracteristicas
+    :param label: vector de etiquetas
+    :param max_iter: número máximo de iteraciones
+    :param vini: valor inicial del vector
+
+    :returns: Coeficientes del hiperplano w
+    """
+    w = vini
+    w_old = None
+    it = 0
+    err = np.Infinity
+    ws = []
+
+    while it < max_iter:
+        w_old = w
+        err = 0
+        for i, xi in enumerate(datos):
+            if signo(w.T @ xi) != label[i]:
+                err += 1
+                w = w + label[i] * xi
+        ws.append(w)
+        it += 1
+
+        if np.allclose(w_old, w):
+            break
+
+    return ws, it, err
+
+class Animation:
+    def __init__(self, X, y, interval=75, x1_lim=(-50, 50), x2_lim=(-50, 50), 
+                 animname="Animacion", xlabel="$x$ axis", ylabel="$y$ axis"):
     
-    pass
+        self._init(x1_lim, x2_lim, label, ylabel)
 
-#CODIGO DEL ESTUDIANTE
+        self.X = X
+        self.y = y
 
-# Random initializations
-iterations = []
-for i in range(0,10):
-    pass
-    #CODIGO DEL ESTUDIANTE
+        self.colors = itertools.cycle("rbgmcyk")
+        self.interval = interval
+        self.animname = animname
+
+
+    @classmethod
+    def _init(cls, x1_lim, x2_lim, xlabel, ylabel):
+        cls.fig, cls.ax = plt.subplots()
+
+        cls.linean, = cls.ax.plot([], [], color="k")
+        cls.y_label = cls.fig.text(0.40, 0.912, "")
+
+        cls.xlabel = xlabel
+        cls.ylabel = ylabel
+
+        cls.x1_lim = x1_lim
+        cls.x2_lim = x2_lim
+
+        cls.ax.set(xlabel=cls.xlabel, ylabel=cls.ylabel, 
+                   xlim=cls.x1_lim, ylim=cls.x2_lim)
+        
+    def scatter_label(self):
+        """Pinta los puntos con sus clases (colores)"""
+        for label in np.unique(self.y):
+            x_label = self.X[:, 1:][y == label]
+            self.ax.scatter(x_label[:, 0], x_label[:, 1], s=10, 
+                       color=next(self.colors), alpha=1, 
+                       label=f"Etiqueta {label}")
+        self.ax.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", 
+                      mode="expand", borderaxespad=0, ncol=3)
+
+    @staticmethod
+    def start():
+        return Animation._start()
+
+    @staticmethod
+    def update(i, ws):
+        return Animation._update(i, ws)
+
+    @classmethod
+    def _start(cls):
+        """Antes del frame inicial"""
+
+        cls.linean.set_data([], [])
+        cls.y_label.set_text("")
+
+        return cls.linean, cls.y_label
+
+    @classmethod
+    def _update(cls, i, ws):
+        """Actualiza la animacion en el frame i-esimo"""
+
+        if i < len(ws): 
+            xs = np.array([cls.x1_lim[0], cls.x1_lim[1]])
+            w = ws[i]
+            # Pendiente y ordenada en el origen
+            a, b = -w[1]/w[2], -w[0]/w[2]
+            line = a*xs + b
+            # Actualizamos la recta 
+            cls.linean.set_data(xs, line)
+            cls.y_label.set_text(f"It {i}: y={a:.2f}x + {b:.2f}")
+        else: # Ultimo frame
+            cls.linean.set(linewidth=2)
+            cls.y_label.set(x=0.38, color="g", fontsize=12)
     
-# print('Valor medio de iteraciones necesario para converger:{}'
-        # .format(np.mean(np.asarray(iterations))))
+        return cls.linean, cls.y_label
 
-input("\n--- Pulsar tecla para continuar ---\n")
+    def render(self, ws):
+        """Abre una ventana con la animacion"""
+
+        self.scatter_label() 
+
+        self.anim = FuncAnimation(self.fig, Animation.update, fargs=(ws, ),
+                                  init_func=Animation.start, repeat=False,
+                                  frames=len(ws)+1, interval=self.interval, 
+                                  blit=False)
+        
+    @staticmethod
+    def show():
+        plt.show()
+
+    def save(self):
+        """BORRAR"""
+
+        self.anim.save(fr"{figures}\{self.animname}.gif", writer="imagemagick")
+
+def tabla_resultados(X, y, max_iter=10_000, animation=False, interval=25):
+    vini = np.array([0, 0, 0])
+    ws, it, err = ajusta_PLA(X, y, max_iter, vini)
+
+    print(f"vini={vini}")
+    print(f"w={ws[-1]}")
+    print(f"it={it}")
+    print(f"err={err}")
+
+    if animation:
+        animation = Animation(X, y, interval=interval, animname="perceptron")
+        animation.render(ws)
+        animation.show()
+
+    # # Random initializations
+    iterations = []
+    errs = []
+    for i in range(10):
+        vini = np.random.uniform(size=3)
+        ws, it, err = ajusta_PLA(X, y, max_iter, vini)
+        iterations.append(it)
+        errs.append(err)
+
+        print(f"vini={vini}")
+        print(f"w={ws[-1]}")
+        print(f"it={it}")
+        print(f"err={err}")
+
+        if animation:
+            animation = Animation(X, y, interval=interval, animname="perceptron")
+            animation.render(ws)
+            animation.show()
+
+    print(f"it medios: {np.mean(np.asarray(iterations))}")
+    print(f"err medio: {np.mean(np.asarray(errs))}")
+
+# Reutilizamos apartado 2a del Ej 1. (Linealmente separables)
+# Con datos en forma homogénea (1 | x1 | x2)
+print("Ejercicio 2a \n")
+columna_unos = np.ones((len(X), 1))
+X = np.hstack((columna_unos, X))
+y = y_original
+
+tabla_resultados(X, y)
+
+print("Ejercicio 2b \n")
+# Reutilizamos apartado 2b del Ej 1. (10% Ruido)
+# Con datos en forma homogénea
+y = y_noise
+
+tabla_resultados(X, y, max_iter=30_000, animation=False, interval=1)
+
+
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 # Ahora con los datos del ejercicio 1.2.b
 
 #CODIGO DEL ESTUDIANTE
 
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 ###############################################################################
 ###############################################################################
@@ -326,7 +495,7 @@ def sgdRL():
 
 #CODIGO DEL ESTUDIANTE
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
     
 
 
@@ -337,7 +506,7 @@ input("\n--- Pulsar tecla para continuar ---\n")
 #CODIGO DEL ESTUDIANTE
 
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 
 ###############################################################################
@@ -394,14 +563,14 @@ x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
 # plt.legend()
 # plt.show()
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 #LINEAR REGRESSION FOR CLASSIFICATION 
 
 #CODIGO DEL ESTUDIANTE
 
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 
 
@@ -412,7 +581,7 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 
 
-input("\n--- Pulsar tecla para continuar ---\n")
+#input("\n--- Pulsar tecla para continuar ---\n")
 
 
 #COTA SOBRE EL ERROR
