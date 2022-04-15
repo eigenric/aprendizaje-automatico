@@ -1,5 +1,7 @@
 # Aprendizaje Automático
 
+![](Practica_2/memoria/chap1/images/perceptron.mp4)
+
 Prácticas realizadas para la asignatura de Aprendizaje Automático.
 
 - [Práctica 0](Practica_0)
