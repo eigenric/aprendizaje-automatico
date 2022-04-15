@@ -45,7 +45,7 @@ def simula_recta(intervalo):
 # EJERCICIO 1.1: Dibujar una gráfica con la nube de puntos de salida
 # correspondiente
 
-print("Ejercicio 1.1 \n")
+print("Ejercicio 1.1a \n")
 print("Figura 1.1. Gráfica de nube de puntos uniformemente distribuidos.")
 
 x = simula_unif(50, 2, [-50,50])
@@ -55,30 +55,30 @@ ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
 ax.set_xlim(-50, 50)
 ax.set_ylim(-50, 50)
 
-plt.savefig(f"{figures}/Figure_1.png", dpi=600)
+plt.savefig(f"{figures}/Figure_1.png", bbox_inches='tight',pad_inches = 0, dpi=600)
 plt.show()
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
 # ###############################################################################
 
-# EJERCICIO 1.2: Dibujar una gráfica con la nube de puntos de salida
+# EJERCICIO 1.1a: Dibujar una gráfica con la nube de puntos de salida
 # correspondiente
 
-print("Ejercicio 1.2 \n")
+print("Ejercicio 1.1b \n")
 print("Figura 1.2. Gráfica de nube de puntos distribuición gaussiana")
 
 fig, ax = plt.subplots()
 x = simula_gauss(50, 2, np.array([5, 7]))
 ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
-plt.savefig(f"{figures}/Figure_2.png", dpi=600)
+plt.savefig(f"{figures}/Figure_2.png", bbox_inches='tight',pad_inches = 0, dpi=600)
 plt.show()
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
 ################################################################################
 
-# EJERCICIO 2.1: Usar recta simulada para etiquetar puntos
+# EJERCICIO 1.2a: Usar recta simulada para etiquetar puntos
 
 # La funcion np.sign(0) da 0, lo que nos puede dar problemas
 def signo(x):
@@ -89,7 +89,7 @@ def signo(x):
 def f(x, y, a, b):
 	return signo(y - a*x - b)
 
-print("Ejercicio 2.1 \n")
+print("Ejercicio 1.2a \n")
 
 def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
                        xlabel="$x$ axis", ylabel="$y$ axis", 
@@ -142,16 +142,17 @@ def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
     ax.set(xlabel=xlabel, ylabel=ylabel,
            xlim=x1_lim, ylim=x2_lim)
 
-    plt.savefig(f"{figures}/{figname}.png", dpi=600)
+    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
     plt.show()
 
-# 1.2.b. Dibujar una gráfica donde los puntos muestren el resultado de su
+# 1.2a Dibujar una gráfica donde los puntos muestren el resultado de su
 # etiqueta, junto con la recta usada para ello 
 
 print("Figura 1.3. Etiquetado de puntos uniformemente distribuidos según recta.")
 points = simula_unif(100, 2, [-50, 50])
 a, b = simula_recta([-50, 50])
 y_labels = np.array([f(x, y, a, b) for x,y in points])
+y_original = y_labels
 
 scatter_label_line(points, y_labels, a, b, 
                    x1_lim=(-50, 50), x2_lim=(-50, 50),
@@ -159,23 +160,21 @@ scatter_label_line(points, y_labels, a, b,
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
-# Introducimos 10% de ruido en las etiquetas positivas y en las negativas.
+# Introducimos 10% de ruido en las etiquetas positivas 
+# y en las negativas.
+print("Ejercicio 1.2b \n")
 
-positivos_ids = np.where(y_labels == 1)[0]
-negativos_ids = np.where(y_labels == -1)[0]
+for label in (-1, 1):
+    label_ids = np.where(y_labels == label)[0]
+    N = len(label_ids)
+    noise_label = np.random.choice(label_ids, size=round(0.1*N),
+                                   replace=False)
 
-N, M = len(positivos_ids), len(negativos_ids)
-
-noise_positivo = np.random.choice(positivos_ids, size=round(0.1*N),
-                                  replace=False)
-noise_negativo = np.random.choice(negativos_ids, size=round(0.1*M),
-                                  replace=False)
-
-y_labels[noise_positivo] = -y_labels[noise_positivo]
-y_labels[noise_negativo] = -y_labels[noise_negativo]
+    y_labels[noise_label] = -y_labels[noise_label]
 
 # Dibujamos de nuevo la gráfica con el ruido
 
+print("Figura 1.4. Muestra uniforme con 10% de ruido") 
 scatter_label_line(points, y_labels, a, b, 
                    x1_lim=(-50, 50), x2_lim=(-50, 50),
                    figname="Figure_4", legend_upper=True)
@@ -186,14 +185,16 @@ input("\n--- Pulsar tecla para continuar ---\n")
 ###############################################################################
 ###############################################################################
 
-# EJERCICIO 1.3: Supongamos ahora que las siguientes funciones definen la
+# EJERCICIO 1.2c: Supongamos ahora que las siguientes funciones definen la
 # frontera de clasificación de los puntos de la muestra en lugar de una recta
 
-def plot_datos_cuad(X, y, fz, title='Point cloud plot', xaxis='x axis', yaxis='y axis'):
+def plot_datos_cuad(X, y, fz, title='Point cloud plot', 
+                    xaxis='x axis', yaxis='y axis',
+                    figname="Figure_1"):
     #Preparar datos
     min_xy = X.min(axis=0)
     max_xy = X.max(axis=0)
-    border_xy = (max_xy-min_xy)*0.01
+    border_xy = (max_xy-min_xy)*0.001
     
     #Generar grid de predicciones
     xx, yy = np.mgrid[min_xy[0]-border_xy[0]:max_xy[0]+border_xy[0]+0.001:border_xy[0], 
@@ -221,10 +222,61 @@ def plot_datos_cuad(X, y, fz, title='Point cloud plot', xaxis='x axis', yaxis='y
        ylim=(min_xy[1]-border_xy[1], max_xy[1]+border_xy[1]),
        xlabel=xaxis, ylabel=yaxis)
     plt.title(title)
+
+    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
     plt.show()
     
-    
+def fz(fn):
+    """Decorador función de dos variables para aceptar matriz grid"""
+    def fi(X):
+        return fn(X[:, 0], X[:, 1])
+    return fi
 
+def f1(x,y):
+    return (x - 10)**2 + (y - 20)**2 - 400
+
+def f2(x,y):
+    return 0.5 * (x + 10)**2 + (y - 20)**2 - 400
+
+def f3(x,y):
+    return 0.5 * (x - 10)**2 - (y + 20)**2 - 400
+
+def f4(x,y):
+    return y - 20*x**2 - 5*x + 3
+
+# Reutilizamos el etiquetado generado en el apartado 2b
+X = points
+y = y_labels
+
+print("Figura 1.5. Muestra clasificada por circunferencia f_1")
+plot_datos_cuad(X, y, fz(f1), title="Circunferencia $f_1(x,y)$", figname="Figure_5")
+f1_labels = np.array([signo(f1(x,y)) for x,y in X])
+misc_rate1 = np.count_nonzero(f1_labels != y_original) / len(X) * 100
+print(f"Misclassification rate (Circunferencia): {misc_rate1}%")
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+print("Figura 1.6. Muestra clasificada por elipse f_2")
+plot_datos_cuad(X, y, fz(f2), title="Elipse", figname="Figure_6")
+f2_labels = np.array([signo(f2(x,y)) for x,y in X])
+misc_rate2 = np.count_nonzero(f2_labels != y_original) / len(X) * 100
+print(f"Misclassification rate (Elipse): {misc_rate2}%")
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+print("Figura 1.7. Muestra clasificada por hipérbola f_3")
+plot_datos_cuad(X, y, fz(f3), title="Hipérbola", figname="Figure_7")
+f3_labels = np.array([signo(f3(x,y)) for x,y in X])
+misc_rate3 = np.count_nonzero(f3_labels != y_original) / len(X) * 100
+print(f"Misclassification rate (Hipérbola): {misc_rate3}%")
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+print("Figura 1.8. Muestra clasificada por parábola f_4")
+plot_datos_cuad(X, y, fz(f4), title="Parábola", figname="Figure_8")
+f4_labels = np.array([signo(f4(x,y)) for x,y in X])
+misc_rate4 = np.count_nonzero(f4_labels != y_original) / len(X) * 100
+print(f"Misclassification rate (Parábola): {misc_rate4}%")
 
 input("\n--- Pulsar tecla para continuar ---\n")
 

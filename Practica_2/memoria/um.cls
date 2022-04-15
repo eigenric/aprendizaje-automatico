@@ -43,15 +43,15 @@
 %% ****************** Packages (End) *********************
 
 % Paquetes de la AMS. Para entornos de ecuaciones.
-\usepackage{amsmath,amsfonts,amsthm, mathtools}
-\usepackage[shortlabels]{enumitem}
-\usepackage[makeroom]{cancel}
+\RequirePackage{amsmath,amsfonts,amsthm, mathtools}
+\RequirePackage[shortlabels]{enumitem}
+\RequirePackage[makeroom]{cancel}
 \DeclareUnicodeCharacter{2212}{-}
 \spanishdecimal{.}
 
 %% Color de sintaxis
-\usepackage{minted}
-
+\RequirePackage{minted}
+\RequirePackage{multicol}
 
 %% ************ UM Definitions (Start) *****************
 
@@ -119,7 +119,7 @@
 \setsubsubsecheadstyle{\sffamily\large\color{UMRed}}% Set \subsection style
 \setsecnumformat{\csname the#1\endcsname\enskip{\color{gray}\textbar}\enskip}
 
-\newsubfloat{figure} % declares a new subfloat element which allows to use \subbottom commands
+%\newsubfloat{figure} % declares a new subfloat element which allows to use \subbottom commands
 
 \renewcommand{\labelitemi}{\color{UMRed}\scriptsize$\blacksquare$}
 

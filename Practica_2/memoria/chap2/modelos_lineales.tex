@@ -1,1 +1,72 @@
 \chapter{Modelos Lineales}
+
+\section{Algoritmo de aprendizaje del Perceptrón (PLA)}
+
+Implementar la función 
+\mintinline{python}{ajusta_PLA(datos, label, max_iter, vini)} 
+que calcula el  hiperplano solución a un problema de clasificación binaria
+usando el algoritmo PLA. La entrada datos es una matriz donde cada item con su
+etiqueta está representado por una fila de la matriz, label el vector de
+etiquetas (cada etiqueta es un valor $+1$ o $-1$), \mintinline{python}{max_iter}
+es el número máximo de iteraciones permitidas y vini el valor inicial del vector.
+La función devuelve los coeficientes del hiperplano.
+
+\subsection{Ejecutar el algoritmo PLA con los datos empleados en el apartado 2a del
+ejercicio 1.}
+
+Inicializar el algoritmo con: 
+
+\begin{itemize}
+\item el vector cero y, 
+\item con vectores de números aleatorios en [0, 1] (10 veces).
+\end{itemize}
+
+Anotar el número medio de iteraciones necesarias en ambos para converger.
+
+Se deben mostrar en una tabla cada uno de los pesos iniciales empleados, los
+finales (obtenidos tras el proceso de entrenamiento), y el porcentaje de error
+de clasificación. Valorar el resultado relacionando el punto de inicio con el
+número de iteraciones.
+
+\subsection{Hacer lo mismo usando los datos del apartado 2b del ejercicio}
+
+\textbf{¿Observa algún comportamiento diferente? En caso afirmativo diga cuál y las
+razones para que ello ocurra.}
+
+\section{Regresión Logística (RL).}
+
+En este ejercicio emplearemos nuestra propia función objetivo $f$ y un conjunto
+de datos $D$ para ver cómo funciona regresión logística. Consideraremos d = 2
+para que los datos sean fácilmente visualizables, y emplearemos 
+$X = [0, 2] \times [0, 2]$ con probabilidad uniforme de elegir cada $x \in X$.
+Elegir una línea en el plano que pase por X como la frontera que separa la
+región en donde y toma valores $+1$ y $-1$.
+
+Para ello, seleccionar dos puntos aleatorios de $X$ y calcular la línea que pasa
+por ambos.
+
+Impleméntese RL con Gradiente Descendente Estocástico (SGD) del siguiente modo:
+
+\begin{itemize}
+\item Inicializar el vector de pesos con valores 0.
+\item Parar el algoritmo cuando $\Vert w(t+1) - w(t) \Vert < 0.01$, donde $w(t)$
+denota el vector de pesos al final de la época $t$. Recuérdese que una época es
+un pase completo a través de los N ejemplos de nuestro conjunto de datos. 
+\item Aplicar una permutación aleatoria de $\{1, 2,..., N\}$ a los índices de
+los datos, antes de usarlos en cada época del algoritmo. 
+\end{itemize}
+
+A continuación, empleando la implementación anterior, realícese el siguiente
+experimento: 
+
+\begin{itemize}
+\item Seleccione $N = 100$ puntos aleatorios $\{x_n \}$  de $X$ y evalúe las
+respuestas $\{y_n \}$ de todos ellos respecto de la frontera elegida.
+\item Ejecute RL para encontrar la función solución $g$, y evalúe el error 
+$E_{out}$ usando para ello una nueva muestra de datos ($> 999$). Se debe
+escoger experimentalmente tanto el learning rate (tasa de aprendizaje $\eta$)
+como el tamaño de batch. 
+\item Repita el experimento $100$ veces, y calcule los valores promedio de 
+$E_{out}$, de porcentaje de error de clasificación, y de épocas necesarias para
+converger.
+\end{itemize}
