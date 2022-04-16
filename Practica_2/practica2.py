@@ -56,7 +56,7 @@ ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
 ax.set_xlim(-50, 50)
 ax.set_ylim(-50, 50)
 
-#plt.savefig(f"{figures}/Figure_1.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+plt.savefig(f"{figures}/Figure_1.png", bbox_inches='tight',pad_inches = 0, dpi=600)
 #plt.show(block=True)
 plt.close()
 
@@ -73,7 +73,7 @@ print("Figura 1.2. Gráfica de nube de puntos distribuición gaussiana")
 fig, ax = plt.subplots()
 x = simula_gauss(50, 2, np.array([5, 7]))
 ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
-#plt.savefig(f"{figures}/Figure_2.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+plt.savefig(f"{figures}/Figure_2.png", bbox_inches='tight',pad_inches = 0, dpi=600)
 #plt.show(block=True)
 plt.close()
 
@@ -145,7 +145,7 @@ def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
     ax.set(xlabel=xlabel, ylabel=ylabel,
            xlim=x1_lim, ylim=x2_lim)
 
-    #plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
     #plt.show(block=True)
     plt.close()
 
@@ -229,7 +229,7 @@ def plot_datos_cuad(X, y, fz, title='Point cloud plot',
        xlabel=xaxis, ylabel=yaxis)
     plt.title(title)
 
-    #plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=200)
+    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
     #plt.show(block=True)
     plt.close()
     
@@ -300,7 +300,7 @@ def ajusta_PLA(datos, label, max_iter, vini):
     :param max_iter: número máximo de iteraciones
     :param vini: valor inicial del vector
 
-    :returns: Coeficientes del hiperplano w
+    :returns: lista coeficientes w, iteraciones, error de clasificacion
     """
     w = vini
     w_old = None
@@ -311,10 +311,10 @@ def ajusta_PLA(datos, label, max_iter, vini):
     while it < max_iter:
         w_old = w
         err = 0
-        for i, xi in enumerate(datos):
-            if signo(w.T @ xi) != label[i]:
+        for x, y in zip(datos, label):
+            if signo(w.T @ x) != y:
                 err += 1
-                w = w + label[i] * xi
+                w = w + label[i] * x
         ws.append(w)
         it += 1
 
@@ -422,10 +422,12 @@ def tabla_resultados(X, y, max_iter=10_000, animation=False, interval=25):
     vini = np.array([0, 0, 0])
     ws, it, err = ajusta_PLA(X, y, max_iter, vini)
 
-    print(f"vini={vini}")
-    print(f"w={ws[-1]}")
-    print(f"it={it}")
-    print(f"err={err}")
+    w = ws[-1]
+    err_percent = err / len(X) * 100
+
+    print("Vector inicial | Iteraciones | Coeficientes w | Error de clasificación")
+    print("----- | ----- | ----- | ---- ")
+    print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]$ | ${err_percent}\%$")
 
     if animation:
         animation = Animation(X, y, interval=interval, animname="perceptron")
@@ -438,21 +440,21 @@ def tabla_resultados(X, y, max_iter=10_000, animation=False, interval=25):
     for i in range(10):
         vini = np.random.uniform(size=3)
         ws, it, err = ajusta_PLA(X, y, max_iter, vini)
+        w = ws[-1]
+        err_percent = err / len(X) * 100
+
         iterations.append(it)
         errs.append(err)
 
-        print(f"vini={vini}")
-        print(f"w={ws[-1]}")
-        print(f"it={it}")
-        print(f"err={err}")
+        print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]$ | ${err_percent}\%$")
 
         if animation:
             animation = Animation(X, y, interval=interval, animname="perceptron")
             animation.render(ws)
             animation.show()
 
-    print(f"it medios: {np.mean(np.asarray(iterations))}")
-    print(f"err medio: {np.mean(np.asarray(errs))}")
+    print(f"Promedio iteraciones: {np.mean(np.asarray(iterations))}")
+    print(f"Promedio error de clasificación: {np.mean(np.asarray(errs))}")
 
 # Reutilizamos apartado 2a del Ej 1. (Linealmente separables)
 # Con datos en forma homogénea (1 | x1 | x2)
@@ -464,11 +466,11 @@ y = y_original
 tabla_resultados(X, y)
 
 print("Ejercicio 2b \n")
-# Reutilizamos apartado 2b del Ej 1. (10% Ruido)
+# Reutilizamos apartado 2b del Ej 1. (10% Ruido no l.s)
 # Con datos en forma homogénea
 y = y_noise
 
-tabla_resultados(X, y, max_iter=30_000, animation=False, interval=1)
+tabla_resultados(X, y, max_iter=5_000, animation=False, interval=1)
 
 
 #input("\n--- Pulsar tecla para continuar ---\n")

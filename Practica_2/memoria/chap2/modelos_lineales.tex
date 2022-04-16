@@ -28,10 +28,51 @@ finales (obtenidos tras el proceso de entrenamiento), y el porcentaje de error
 de clasificación. Valorar el resultado relacionando el punto de inicio con el
 número de iteraciones.
 
-\subsection{Hacer lo mismo usando los datos del apartado 2b del ejercicio}
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{llll}
+    \toprule
+        Vector inicial & Iteraciones & Coeficientes w & Error de clasificación \\ \midrule
+        $[0.000, 0.000, 0.000]$ & $75$ & $[661.00,23.20,32.39]$ & $0\%$ \\ \midrule
+        $[0.574, 0.349, 0.057]$ & $257$ & $[1115.57,43.48,62.12]$ & $0\%$ \\
+        $[0.229, 0.664, 0.497]$ & $43$ & $[464.23,15.39,23.75]$ & $0\%$ \\ 
+        $[0.519, 0.175, 0.571]$ & $231$ & $[1078.52,39.47,53.76]$ & $0\%$ \\
+        $[0.997, 0.817, 0.594]$ & $71$ & $[664.00,23.15,31.90]$ & $0\%$ \\ 
+        $[0.976, 0.902, 0.596]$ & $76$ & $[661.98,24.90,36.20]$ & $0\%$ \\ 
+        $[0.032, 0.094, 0.065]$ & $59$ & $[558.03,19.36,29.71]$ & $0\%$ \\ 
+        $[0.452, 0.375, 0.975]$ & $274$ & $[1145.45,40.28,60.81]$ & $0\%$ \\
+        $[0.168, 0.973, 0.767]$ & $235$ & $[1089.17,39.45,53.53]$ & $0\%$ \\
+        $[0.824, 0.633, 0.669]$ & $257$ & $[1148.82,39.90,60.95]$ & $0\%$ \\
+        $[0.477, 0.013, 0.353]$ & $74$ & $[673.48,22.59,31.35]$ & $0\%$ \\ \bottomrule
+        Promedio & $157.7$ & ~ & $0\%$ \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Hacer lo mismo usando los datos del apartado 2b del ejercicio 1.}
 
 \textbf{¿Observa algún comportamiento diferente? En caso afirmativo diga cuál y las
 razones para que ello ocurra.}
+
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{llll}
+    \toprule
+        Vector inicial & Iteraciones & Coeficientes w & Error de clasificación \\ \midrule
+        $[0.000, 0.000, 0.000]$ & $5000$ & $[339.00,24.81,55.86]$ & $24\%$ \\ \midrule
+        $[0.492, 0.730, 0.469]$ & $5000$ & $[348.49,17.77,42.43]$ & $24\%$ \\ 
+        $[0.457, 0.138, 0.011]$ & $5000$ & $[349.46,16.66,44.13]$ & $24\%$ \\ 
+        $[0.758, 0.320, 0.984]$ & $5000$ & $[339.76,21.61,56.29]$ & $22\%$ \\ 
+        $[0.220, 0.339, 0.524]$ & $5000$ & $[336.22,17.72,43.85]$ & $25\%$ \\ 
+        $[0.755, 0.464, 0.125]$ & $5000$ & $[336.75,17.32,53.11]$ & $27\%$ \\ 
+        $[0.313, 0.505, 0.674]$ & $5000$ & $[339.31,15.10,26.87]$ & $20\%$ \\ 
+        $[0.770, 0.130, 0.023]$ & $5000$ & $[333.77,27.72,49.69]$ & $20\%$ \\ 
+        $[0.519, 0.810, 0.013]$ & $5000$ & $[343.52,12.09,38.81]$ & $22\%$ \\ 
+        $[0.672, 0.687, 0.449]$ & $5000$ & $[331.67,12.87,21.73]$ & $19\%$ \\ 
+        $[0.915, 0.644, 0.005]$ & $5000$ & $[341.91,21.10,56.13]$ & $22\%$ \\ \bottomrule
+        Promedio & $5000$ & ~ & $22.5\%$ \\ \bottomrule
+    \end{tabular}
+\end{table}
+
 
 \section{Regresión Logística (RL).}
 
