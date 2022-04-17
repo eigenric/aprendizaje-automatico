@@ -46,19 +46,32 @@ def simula_recta(intervalo):
 # EJERCICIO 1.1: Dibujar una gráfica con la nube de puntos de salida
 # correspondiente
 
+def scatter_points(x, x1_lim=None, x2_lim=None, 
+                   xlabel="$x$ axis", ylabel="$y$ axis",
+                   figname="Figure_1"):
+    """Dibuja una nube de puntos"""
+
+    fig, ax = plt.subplots()
+    ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
+
+    ax.set_xlim(x1_lim)
+    ax.set_ylim(x2_lim)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    
+    plt.savefig(fr"{figures}\{figname}.png", dpi=600)
+    plt.show(block=True)
+    plt.close()
+
+
+    
 print("Ejercicio 1.1a \n")
 print("Figura 1.1. Gráfica de nube de puntos uniformemente distribuidos.")
 
 x = simula_unif(50, 2, [-50,50])
 
-fig, ax = plt.subplots()
-ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
-ax.set_xlim(-50, 50)
-ax.set_ylim(-50, 50)
-
-plt.savefig(f"{figures}/Figure_1.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-#plt.show(block=True)
-plt.close()
+#scatter_points(x, x1_lim=(-50, 50), x2_lim=(-50, 50), figname="Figure_1")
 
 #input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -70,12 +83,9 @@ plt.close()
 print("Ejercicio 1.1b \n")
 print("Figura 1.2. Gráfica de nube de puntos distribuición gaussiana")
 
-fig, ax = plt.subplots()
 x = simula_gauss(50, 2, np.array([5, 7]))
-ax.scatter(x[:, 0], x[:, 1], s=10, color="b")
-plt.savefig(f"{figures}/Figure_2.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-#plt.show(block=True)
-plt.close()
+
+#scatter_points(x, x1_lim=(-5, 6.5), x2_lim=(-7.5, 7.5), figname="Figure_2")
 
 #input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -94,18 +104,20 @@ def f(x, y, a, b):
 
 print("Ejercicio 1.2a \n")
 
-def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
+def scatter_label_lines(x, y, ws_labels=None, ws_colors=None,
+                       x1_lim=None, x2_lim=None,
                        xlabel="$x$ axis", ylabel="$y$ axis", 
                        ax=None, figname="Figure1",
-                       legend_upper=False,):
+                       legend_upper=False):
     """
-    Dibuja nube 2D de puntos con etiquetas y una recta.
+    Dibuja nube 2D de puntos con etiquetas y recta(s).
 
     :param x: Array de puntos (x,y)
     :param y: Vector de etiquetas
 
     :param a: Pendiente de la recta
     :param b: Ordenada en el origen
+    :param ws_labels: Diccionario:  w  -> w_label para regresión lineal
 
     :param x1_lim: Tupla mínimo y máximo valor de x1 
     :param x2_lim: Tupla mínimo y máximo valor de x2
@@ -122,18 +134,29 @@ def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
     # Pintamos los puntos de cada etiqueta con color distinto
     colors = itertools.cycle("rbgmcyk")
 
+    # Colores para las rectas
+    infinite_colors = itertools.cycle("kmycgbr")
+
+    # Generamos etiquetas y colores por defecto
+    if ws_labels is not None:
+        if ws_colors is None:
+            ws_colors = tuple(itertools.islice(infinite_colors, len(ws_labels)))
+
     for label in np.unique(y):
         x_label = x[y == label]
         ax.scatter(x_label[:, 0], x_label[:, 1], s=10, color=next(colors), 
                    alpha=1, label=f"Etiqueta {label}")
 
-    # Pintamos la linea
-    step = (x1_lim[1] - x1_lim[0]) // 10
-    xs = np.linspace(x1_lim[0], x1_lim[1], step)
-    line = a*xs + b
-    line_label = f"y = {a:.2f}x + {b:.2f}"
+    if ws_labels is not None:
+        x1_min, x1_max = np.array([np.min(x[:, 0]), np.max(x[:, 0])])
+        x2_min, x2_max = np.array([np.min(x[:, 1]), np.max(x[:, 1])])
 
-    ax.plot(xs, line, label=line_label, color="k")
+        # Pintar la línea (hiperplano) que define cada array de pesos
+        for (w_label, w), w_color in zip(ws_labels.items(), ws_colors):
+            x1_ar = np.array([x1_min, x1_max])
+            # Si w0 + w1x1 + w2x2 = 0 => x2 = -1*(w1*x1 + w0)/w2
+            x2_line = -1*(w[1]*x1_ar + w[0]) / w[2]
+            ax.plot(x1_ar, x2_line, color=w_color, label=w_label)
 
     if legend_upper:
         ax.legend(bbox_to_anchor=(0,1.02,1,0.2), 
@@ -145,9 +168,22 @@ def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
     ax.set(xlabel=xlabel, ylabel=ylabel,
            xlim=x1_lim, ylim=x2_lim)
 
-    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-    #plt.show(block=True)
-    plt.close()
+    plt.savefig(f"{figures}/{figname}.png", dpi=600)
+    plt.show(block=True)
+
+def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
+                       xlabel="$x$ axis", ylabel="$y$ axis", 
+                       ax=None, figname="Figure1",
+                       legend_upper=False):
+
+    w = np.array([-b, -a, 1])
+    ws_labels = {f"y={a:.2f}x + {b:.2f}": w}
+
+    scatter_label_lines(x, y, ws_labels, ws_colors="kmy",
+                        x1_lim=x1_lim, x2_lim=x2_lim,
+                        xlabel=xlabel, ylabel=ylabel,
+                        ax=ax, figname=figname, 
+                        legend_upper=legend_upper)
 
 # 1.2a Dibujar una gráfica donde los puntos muestren el resultado de su
 # etiqueta, junto con la recta usada para ello 
@@ -158,9 +194,11 @@ a, b = simula_recta([-50, 50])
 y_labels = np.array([f(x, y, a, b) for x,y in points])
 y_original = y_labels.copy()
 
-# scatter_label_line(points, y_labels, a, b, 
-                #    x1_lim=(-50, 50), x2_lim=(-50, 50),
-                #    figname="Figure_3", legend_upper=True)
+w_original = np.array([-b, -a, 1])
+
+#scatter_label_line(points, y_labels, a, b, 
+#                   x1_lim=(-50, 50), x2_lim=(-50, 50),
+#                   figname="Figure_3", legend_upper=True)
 
 #input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -181,9 +219,9 @@ y_noise = y_labels
 # Dibujamos de nuevo la gráfica con el ruido
 
 print("Figura 1.4. Muestra uniforme con 10% de ruido") 
-# scatter_label_line(points, y_labels, a, b, 
-                #    x1_lim=(-50, 50), x2_lim=(-50, 50),
-                #    figname="Figure_4", legend_upper=True)
+#scatter_label_line(points, y_labels, a, b, 
+#                   x1_lim=(-50, 50), x2_lim=(-50, 50),
+#                   figname="Figure_4", legend_upper=True)
 
 #input("\n--- Pulsar tecla para continuar ---\n")
 
@@ -229,8 +267,8 @@ def plot_datos_cuad(X, y, fz, title='Point cloud plot',
        xlabel=xaxis, ylabel=yaxis)
     plt.title(title)
 
-    plt.savefig(f"{figures}/{figname}.png", bbox_inches='tight',pad_inches = 0, dpi=600)
-    #plt.show(block=True)
+    plt.savefig(f"{figures}/{figname}.png", dpi=600)
+    plt.show(block=True)
     plt.close()
     
 def fz(fn):
@@ -256,7 +294,7 @@ X = points
 y = y_labels
 
 print("Figura 1.5. Muestra clasificada por circunferencia f_1")
-plot_datos_cuad(X, y, fz(f1), title="Circunferencia $f_1(x,y)$", figname="Figure_5")
+#plot_datos_cuad(X, y, fz(f1), title="Circunferencia $f_1(x,y)$", figname="Figure_5")
 f1_labels = np.array([signo(f1(x,y)) for x,y in X])
 misc_rate1 = np.count_nonzero(f1_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Circunferencia): {misc_rate1}%")
@@ -264,7 +302,7 @@ print(f"Misclassification rate (Circunferencia): {misc_rate1}%")
 #input("\n--- Pulsar tecla para continuar ---\n")
 
 print("Figura 1.6. Muestra clasificada por elipse f_2")
-plot_datos_cuad(X, y, fz(f2), title="Elipse", figname="Figure_6")
+#plot_datos_cuad(X, y, fz(f2), title="Elipse", figname="Figure_6")
 f2_labels = np.array([signo(f2(x,y)) for x,y in X])
 misc_rate2 = np.count_nonzero(f2_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Elipse): {misc_rate2}%")
@@ -272,7 +310,7 @@ print(f"Misclassification rate (Elipse): {misc_rate2}%")
 #input("\n--- Pulsar tecla para continuar ---\n")
 
 print("Figura 1.7. Muestra clasificada por hipérbola f_3")
-plot_datos_cuad(X, y, fz(f3), title="Hipérbola", figname="Figure_7")
+#plot_datos_cuad(X, y, fz(f3), title="Hipérbola", figname="Figure_7")
 f3_labels = np.array([signo(f3(x,y)) for x,y in X])
 misc_rate3 = np.count_nonzero(f3_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Hipérbola): {misc_rate3}%")
@@ -280,7 +318,7 @@ print(f"Misclassification rate (Hipérbola): {misc_rate3}%")
 #input("\n--- Pulsar tecla para continuar ---\n")
 
 print("Figura 1.8. Muestra clasificada por parábola f_4")
-plot_datos_cuad(X, y, fz(f4), title="Parábola", figname="Figure_8")
+#plot_datos_cuad(X, y, fz(f4), title="Parábola", figname="Figure_8")
 f4_labels = np.array([signo(f4(x,y)) for x,y in X])
 misc_rate4 = np.count_nonzero(f4_labels != y_original) / len(X) * 100
 print(f"Misclassification rate (Parábola): {misc_rate4}%")
@@ -306,6 +344,7 @@ def ajusta_PLA(datos, label, max_iter, vini):
     w_old = None
     it = 0
     err = np.Infinity
+    errs = []
     ws = []
 
     while it < max_iter:
@@ -314,20 +353,21 @@ def ajusta_PLA(datos, label, max_iter, vini):
         for x, y in zip(datos, label):
             if signo(w.T @ x) != y:
                 err += 1
-                w = w + label[i] * x
+                w = w + y * x
         ws.append(w)
+        errs.append(err)
         it += 1
 
         if np.allclose(w_old, w):
             break
 
-    return ws, it, err
+    return ws, it, errs
 
 class Animation:
     def __init__(self, X, y, interval=75, x1_lim=(-50, 50), x2_lim=(-50, 50), 
                  animname="Animacion", xlabel="$x$ axis", ylabel="$y$ axis"):
     
-        self._init(x1_lim, x2_lim, label, ylabel)
+        self._init(x1_lim, x2_lim, xlabel, ylabel)
 
         self.X = X
         self.y = y
@@ -394,8 +434,12 @@ class Animation:
             cls.linean.set_data(xs, line)
             cls.y_label.set_text(f"It {i}: y={a:.2f}x + {b:.2f}")
         else: # Ultimo frame
+            w = ws[-1]
+            a, b = -w[1]/w[2], -w[0]/w[2]
+
             cls.linean.set(linewidth=2)
             cls.y_label.set(x=0.38, color="g", fontsize=12)
+            cls.y_label.set_text(f"It {i}: y={a:.2f}x + {b:.2f}")
     
         return cls.linean, cls.y_label
 
@@ -412,49 +456,73 @@ class Animation:
     @staticmethod
     def show():
         plt.show()
+        #plt.close()
 
     def save(self):
         """BORRAR"""
 
         self.anim.save(fr"{figures}\{self.animname}.gif", writer="imagemagick")
 
-def tabla_resultados(X, y, max_iter=10_000, animation=False, interval=25):
+def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None, 
+                     animation=False, linewidth=1, interval=25):
     vini = np.array([0, 0, 0])
-    ws, it, err = ajusta_PLA(X, y, max_iter, vini)
-
-    w = ws[-1]
+    ws, it, errs0 = ajusta_PLA(X, y, max_iter, vini)
+    err = errs0[-1]
+    w0 = ws[-1]
     err_percent = err / len(X) * 100
+    err_ini = errs0[0] / len(X) * 100
 
-    print("Vector inicial | Iteraciones | Coeficientes w | Error de clasificación")
+    print("Vector inicial | Iteraciones | Coeficientes w | Error de clasificación | Error inicial")
     print("----- | ----- | ----- | ---- ")
-    print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]$ | ${err_percent}\%$")
+    print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w0[0]:.2f},{w0[1]:.2f},{w0[2]:.2f}]$ | ${err_percent}\%$ | {err_ini}")
 
     if animation:
         animation = Animation(X, y, interval=interval, animname="perceptron")
         animation.render(ws)
         animation.show()
 
+    fig, ax = plt.subplots()
+    xs = range(len(errs0))
+    ax.set_xlabel("Número de iteración")
+    ax.set_ylabel("% Error de clasificación")
+    ax.plot(xs, errs0, linewidth=linewidth)
+    plt.savefig(fr"{figures}\{figname1}.png", dpi=600)
+    plt.show()
+
     # # Random initializations
     iterations = []
     errs = []
+    vinis = []
     for i in range(10):
         vini = np.random.uniform(size=3)
-        ws, it, err = ajusta_PLA(X, y, max_iter, vini)
+        ws, it, errs_r = ajusta_PLA(X, y, max_iter, vini)
         w = ws[-1]
+        err = errs_r[-1]
         err_percent = err / len(X) * 100
+        err_ini = errs_r[0] / len(X) * 100
+
+        if i == 7:
+            w7 = ws[-1]
+            errs7 = errs_r
 
         iterations.append(it)
         errs.append(err)
+        vinis.append(vini)
 
-        print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]$ | ${err_percent}\%$")
-
-        if animation:
-            animation = Animation(X, y, interval=interval, animname="perceptron")
-            animation.render(ws)
-            animation.show()
+        #print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]$ | ${err_percent}\%$")
+        print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w0[0]:.2f},{w0[1]:.2f},{w0[2]:.2f}]$ | ${err_percent}\%$ | {err_ini}")
 
     print(f"Promedio iteraciones: {np.mean(np.asarray(iterations))}")
     print(f"Promedio error de clasificación: {np.mean(np.asarray(errs))}")
+
+    ws_labels = {"Recta original" : w_original,
+                "v_ini nulo": w0,
+                "v_ini aleatorio (7ta it)": w7}
+
+    scatter_label_lines(X[:, 1:], y, ws_labels=ws_labels, 
+                        x1_lim=(-50, 50), x2_lim=(-50, 50),
+                        figname=figname2, legend_upper=True)
+
 
 # Reutilizamos apartado 2a del Ej 1. (Linealmente separables)
 # Con datos en forma homogénea (1 | x1 | x2)
@@ -463,14 +531,26 @@ columna_unos = np.ones((len(X), 1))
 X = np.hstack((columna_unos, X))
 y = y_original
 
-tabla_resultados(X, y)
+y_s = y.copy()
+y_s.shape = (len(y_s), 1)
+np.savetxt("muestra.csv", np.hstack((X, y_s)), delimiter=",")
+
+tabla_resultados(X, y, max_iter=10_000, figname1="Figure_9",
+                 figname2="Figure_10", animation=False, interval=100)
+
 
 print("Ejercicio 2b \n")
 # Reutilizamos apartado 2b del Ej 1. (10% Ruido no l.s)
 # Con datos en forma homogénea
 y = y_noise
 
-tabla_resultados(X, y, max_iter=5_000, animation=False, interval=1)
+y_s = y.copy()
+y_s.shape = (len(y_s), 1)
+np.savetxt("muestra_noise.csv", np.hstack((X, y_s)), delimiter=",")
+
+tabla_resultados(X, y, max_iter=5_000, figname1="Figure_11",
+                 figname2="Figure_12", linewidth=0.3, 
+                animation=False)
 
 
 #input("\n--- Pulsar tecla para continuar ---\n")

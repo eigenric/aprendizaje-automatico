@@ -25,8 +25,28 @@ Anotar el número medio de iteraciones necesarias en ambos para converger.
 
 Se deben mostrar en una tabla cada uno de los pesos iniciales empleados, los
 finales (obtenidos tras el proceso de entrenamiento), y el porcentaje de error
-de clasificación. Valorar el resultado relacionando el punto de inicio con el
-número de iteraciones.
+de clasificación. \textbf{Valorar el resultado relacionando el punto de inicio con el
+número de iteraciones.}
+
+\hfill \break
+
+El algoritmo de aprendizaje del perceptrón (PLA) implementado en
+\mintinline{python}{ajusta_PLA} consiste en actualizar los pesos por cada punto
+mal clasificado de la muestra de acuerdo a la siguiente regla:
+
+$$
+w(t+1) = w(t) + x_i \cdot y_i
+$$
+
+Esto se hace hasta que el vector de pesos no cambie en toda una época (recorrido
+de la muestra) o se alcance el número máximo de iteraciones \mintinline{python}{max_iter}.
+La implementación realizada devuelve el histórico de pesos, el número de
+iteraciones dadas y el error de clasificación.
+
+Para visualizar el proceso de convergencia de PLA, se ha implementado una clase 
+\mintinline{python}{Animacion}. En la ejecución del código se muestra esta
+animación para el vector inicial nulo en los datos sin ruido, donde tras $75$
+iteraciones se encuentra un clasificador con $0\%$ de error.
 
 \begin{table}[!ht]
     \centering
@@ -46,14 +66,69 @@ número de iteraciones.
         $[0.477, 0.013, 0.353]$ & $74$ & $[673.48,22.59,31.35]$ & $0\%$ \\ \bottomrule
         Promedio & $157.7$ & ~ & $0\%$ \\ \bottomrule
     \end{tabular}
+    \caption{Resultados de ejecución de PLA \textbf{muestra sin ruido} para vector inicial nulo y generados aleatoriamente (10 iteraciones)}
 \end{table}
 
-\subsection{Hacer lo mismo usando los datos del apartado 2b del ejercicio 1.}
+Podemos observar en los resultados, que al ser los datos \textbf{linealmente separables}, 
+PLA converge en todos los casos a una recta con error de clasificación cero en
+una media de $\approx 158$ iteraciones (vectores iniciales aleatorios).
 
+Si hallamos la desviación típica del número de iteraciones, obtenemos $94.17$, un valor
+considerablemente alto que indica la alta sensibilidad de la convergencia (nº de iteraciones
+en llegar al $0\%$ de error) con respecto al vector inicial. Podemos afirmar por
+tanto, que escoger el vector nulo como vector inicial resulta ser una buena heurística.
+
+En las siguiente figura, vemos los clasificadores obtenidos para el vector nulo, el vector
+generado aleatoriamente en la iteracion $7$ y el clasificador original. Le sigue una gráfica
+para visualizar la disminución del error de clasificación a lo largo de las iteraciones.
+
+\begin{figure}[H]
+  \caption{Muestra linealmente separable (sin ruido)}\par\medskip
+  \begin{minipage}[b]{.5\linewidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figure_10}
+    \subcaption{Clasificadores para distintos \mintinline{python}{v_ini}} \label{subfig-4:dummy2}
+  \end{minipage}
+  \hfill \hfill
+  \begin{minipage}[b]{.5\linewidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{Figure_9}
+    \subcaption{\% Error clasif. a lo largo de las épocas}
+  \end{minipage}
+  \label{fig:dummy3}
+\end{figure}
+
+\subsection{Repetir usando los datos del apartado 2b del ejercicio 1.}
 \textbf{¿Observa algún comportamiento diferente? En caso afirmativo diga cuál y las
 razones para que ello ocurra.}
 
-\begin{table}[!ht]
+\begin{figure}[H]
+  \caption{Muestra con ruido (no linealmente separable)}\par\medskip
+  \begin{minipage}[b]{.5\linewidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figure_12}
+    \subcaption{Clasificadores para distintos \mintinline{python}{v_ini}} \label{subfig-4:dummy6}
+  \end{minipage}
+  \hfill \hfill
+  \begin{minipage}[b]{.5\linewidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{Figure_11}
+    \subcaption{\% Error clasif. a lo largo de las épocas}
+  \end{minipage}
+  \label{fig:dummy9}
+\end{figure}
+
+
+En este caso, partimos de la muestra de datos con $10\%$ de ruido. Así, PLA no tiene
+garantizada una convergencia pues los datos \textbf{no son linealmente separables} y 
+la cota inferior del error de clasificación para las rectas obtenidas con PLA
+es justo ese $10\%$.
+
+Por tanto, las ejecución se para al alcanzar el máximo número de iteraciones (épocas)
+que se ha fijado en $5000$.
+
+
+\begin{table}[H]
     \centering
     \begin{tabular}{llll}
     \toprule
@@ -71,10 +146,21 @@ razones para que ello ocurra.}
         $[0.915, 0.644, 0.005]$ & $5000$ & $[341.91,21.10,56.13]$ & $22\%$ \\ \bottomrule
         Promedio & $5000$ & ~ & $22.5\%$ \\ \bottomrule
     \end{tabular}
+    \caption{Resultados de ejecución de PLA \textbf{muestra con ruido} para vector inicial nulo y generados aleatoriamente (10 iteraciones)}
 \end{table}
 
+Al contrario que en el caso anterior (muestra sin ruido), ejecutar el algoritmo 
+con vector nulo como vector inicial produce un error de clasificación mayor que
+la media obtenida para los 10 vectores iniciales generados aleatoriamente 
+($24\%$ vs $22.5\%$). Además, en este caso, por lo comentado anteriormente,
+el vector inicial no influye en el número de iteraciones.
 
-\section{Regresión Logística (RL).}
+En cuanto a la variación del error por número de iteraciones, podemos observar grandes
+oscilaciones, estando concentrados la mayoría en el intervalo $22.5 \pm 2.5\%$. 
+El mínimo se alcanza entorno a la iteración $4000$ donde el error llega a ser
+$14\%$, bastante cerca de la cota inferior del $10\%$ antes mencionada.
+
+\section{Regresión Logística (RL)}
 
 En este ejercicio emplearemos nuestra propia función objetivo $f$ y un conjunto
 de datos $D$ para ver cómo funciona regresión logística. Consideraremos d = 2
