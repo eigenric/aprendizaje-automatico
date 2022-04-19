@@ -6,8 +6,10 @@ Nombre Estudiante: Ricardo Ruiz Fernandez de Alba
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from matplotlib.animation import FuncAnimation
 import itertools
+import warnings
+
+from matplotlib.animation import FuncAnimation, FFMpegWriter
 
 figures = r"memoria\chap1\images"
 
@@ -396,7 +398,7 @@ class Animation:
     def scatter_label(self):
         """Pinta los puntos con sus clases (colores)"""
         for label in np.unique(self.y):
-            x_label = self.X[:, 1:][y == label]
+            x_label = self.X[:, 1:][self.y == label]
             self.ax.scatter(x_label[:, 0], x_label[:, 1], s=10, 
                        color=next(self.colors), alpha=1, 
                        label=f"Etiqueta {label}")
@@ -458,10 +460,24 @@ class Animation:
         plt.show()
         #plt.close()
 
-    def save(self):
+    def save(self, format="gif", fps=None):
         """BORRAR"""
 
-        self.anim.save(fr"{figures}\{self.animname}.gif", writer="imagemagick")
+        if format == "gif":
+            print(f"Guardando animacion {self.animname} en GIF")
+            self.anim.save(fr"{figures}\{self.animname}.gif", writer="imagemagick")
+        elif format == "mp4":
+            if fps is None:
+                fps = 10
+            FFwriter = FFMpegWriter(fps)
+            print(f"Guardando animacion {self.animname} en MP4")
+            self.anim.save(fr"{figures}\{self.animname}.mp4", writer=FFwriter)
+
+def homogeneizar(X):
+    """Añade una columna inicial de unos a una matriz"""
+
+    columna_unos = np.ones((len(X), 1))
+    return np.hstack((columna_unos, X))
 
 def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None, 
                      animation=False, linewidth=1, interval=25):
@@ -487,7 +503,9 @@ def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None,
     ax.set_ylabel("% Error de clasificación")
     ax.plot(xs, errs0, linewidth=linewidth)
     plt.savefig(fr"{figures}\{figname1}.png", dpi=600)
-    plt.show()
+    #plt.show()
+    plt.close()
+    
 
     # # Random initializations
     iterations = []
@@ -519,16 +537,16 @@ def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None,
                 "v_ini nulo": w0,
                 "v_ini aleatorio (7ta it)": w7}
 
-    scatter_label_lines(X[:, 1:], y, ws_labels=ws_labels, 
-                        x1_lim=(-50, 50), x2_lim=(-50, 50),
-                        figname=figname2, legend_upper=True)
+    #scatter_label_lines(X[:, 1:], y, ws_labels=ws_labels, 
+    #                    x1_lim=(-50, 50), x2_lim=(-50, 50),
+    #                    figname=figname2, legend_upper=True)
 
 
 # Reutilizamos apartado 2a del Ej 1. (Linealmente separables)
 # Con datos en forma homogénea (1 | x1 | x2)
 print("Ejercicio 2a \n")
-columna_unos = np.ones((len(X), 1))
-X = np.hstack((columna_unos, X))
+
+X = homogeneizar(X)
 y = y_original
 
 y_s = y.copy()
@@ -539,6 +557,8 @@ tabla_resultados(X, y, max_iter=10_000, figname1="Figure_9",
                  figname2="Figure_10", animation=False, interval=100)
 
 
+#input("\n--- Pulsar tecla para continuar ---\n")
+
 print("Ejercicio 2b \n")
 # Reutilizamos apartado 2b del Ej 1. (10% Ruido no l.s)
 # Con datos en forma homogénea
@@ -547,17 +567,11 @@ y = y_noise
 y_s = y.copy()
 y_s.shape = (len(y_s), 1)
 np.savetxt("muestra_noise.csv", np.hstack((X, y_s)), delimiter=",")
+max_iter = 50
 
-tabla_resultados(X, y, max_iter=5_000, figname1="Figure_11",
+tabla_resultados(X, y, max_iter=max_iter, figname1="Figure_11",
                  figname2="Figure_12", linewidth=0.3, 
                 animation=False)
-
-
-#input("\n--- Pulsar tecla para continuar ---\n")
-
-# Ahora con los datos del ejercicio 1.2.b
-
-#CODIGO DEL ESTUDIANTE
 
 
 #input("\n--- Pulsar tecla para continuar ---\n")
@@ -568,14 +582,133 @@ tabla_resultados(X, y, max_iter=5_000, figname1="Figure_11",
 
 # EJERCICIO 3: REGRESIÓN LOGÍSTICA CON STOCHASTIC GRADIENT DESCENT
 
-def sgdRL():
-    #CODIGO DEL ESTUDIANTE
+def error_clasificacion(X, y, w):
+    """
+    Calcula el porcentaje de error de clasificacion
 
-    return w
+    Las entradas negativas son aquellas donde los signos iniciales eran distintos.
+    (Elementos mal clasificados)
+    """
+    signos = y * (X @ w)
+    return 100 * len(signos[signos < 0]) / len(signos)
+
+def error_clas(X, y, w):
+
+    err = 0
+    for xi, yi in zip(X, y):
+        if signo(xi @ w) != yi:
+            err += 1
+
+    return 100 * err / len(X) 
+
+def error_RL(X, y, w):
+    """Calcula el error de entropía cruzada E_in para Regresión Logística"""
+
+    return np.mean(np.log(1 + np.exp(-y * X.dot(w))))
+
+def grad_ein_RL(xi, yi, w):
+    """Calcula el gradiente de Ein para Regresion Logistica"""
+
+    return -yi*xi / (1 + np.exp(yi*w.dot(xi)))
+
+def sgdRL(X, y, lr, max_iter, batch_size=32):
+    """Algoritmo de regresión logística. Basado en SGD-Batch"""
+
+    it = 0
+    X_ids = np.arange(len(X))
+
+    # Inicializamos w_ini a 0
+    w = np.array([0, 0, 0])
+    ws = []
+
+    w_dif = np.Infinity
+
+    while it < max_iter and w_dif >= 0.01:
+        w_old = w.copy()
+        X_ids = np.random.permutation(X_ids)
+
+        # Batch de tamaño 1
+        for batch_id in X_ids:
+            grad = grad_ein_RL(X[batch_id], y[batch_id], w)
+            w = w - lr*grad
+
+        ws.append(w)
+        w_dif = np.linalg.norm(w_old - w)
+
+        it += 1  # Numero de epocas
+
+    return ws, it
 
 
+E_ins = []
+E_outs = []
+E_clas_ins = []
+E_clas_outs = []
+epocas = []
+for i in range(100):
+    # Nuevo conjunto de datos χ = [0, 2] x [0, 2]
+    # N = 100
+    # Recta aleatoria para clasificar
 
-#CODIGO DEL ESTUDIANTE
+    X_train = homogeneizar(simula_unif(100, 2, [0, 2]))
+    X_test = homogeneizar(simula_unif(1000, 2, [0, 2]))
+
+    # Etiquetar los puntos train
+    a, b = simula_recta([0, 2])
+    y_train = np.fromiter((f(x1, x2, a, b) for _, x1, x2 in X_train), np.int64)
+
+    # Etiquetar puntos test
+    y_test = np.fromiter((f(x1, x2, a, b) for _, x1, x2 in X_test), np.int64)
+    
+    eta = 0.01
+    max_iter = 10_000
+
+    ws, it = sgdRL(X_train, y_train, eta, max_iter)
+
+    E_in = error_RL(X_train, y_train, ws[-1])
+    E_clas_in = error_clas(X_train, y_train, ws[-1])
+
+    E_out = error_RL(X_test, y_test, ws[-1])
+    E_clas_out = error_clas(X_test, y_test, ws[-1])
+
+    E_ins.append(E_in)
+    E_clas_ins.append(E_clas_in)
+    E_clas_outs.append(E_clas_out)
+    E_outs.append(E_out)
+    epocas.append(it)
+
+    print(f"It: {it}, E_in: {E_in}, E_out: {E_out}")
+    print(f"E_clas_in: {E_clas_in}, E_clas_out: {E_clas_out}\n")
+
+    # Mostrar animacion del primero
+    if i == 0:
+        anim = Animation(X_train, y_train, interval=50,
+                         x1_lim=(0, 2), x2_lim=(0, 2), animname="RegresionLineal")
+        anim.render(ws)
+        anim.show()
+
+
+epocas_min, epocas_max = np.min(epocas), np.max(epocas)
+print(f"Epocas: (Min, max) = ({epocas_min}, {epocas_max})")
+epocas_mean = np.mean(epocas)
+print("Media 1")
+E_in_mean = np.mean(E_ins)
+print("Media 2")
+E_out_mean = np.mean(E_outs)
+print("Media 3")
+E_clas_in_mean = np.mean(E_clas_ins)
+print("Media 4")
+E_clas_out_mean = np.mean(E_clas_outs)
+print("Media 5")
+
+print(f"Promedio => Epocas: {epocas_mean} | E_out: {E_out_mean} | E_clas_in: {E_clas_in_mean} | E_clas_out : {E_clas_out_mean} ")
+
+    # fig, ax = plt.subplots()
+    # ax.set_xlabel("$eta$")
+    # ax.set_ylabel("$E_{in} \cdot it$")
+    # ax.plot(best_prod.keys(), best_prod.values())
+    # plt.show()
+
 
 #input("\n--- Pulsar tecla para continuar ---\n")
     
@@ -619,9 +752,9 @@ def readData(file_x, file_y, digits, labels):
 	return x, y
 
 # Lectura de los datos de entrenamiento
-x, y = readData('datos/X_train.npy', 'datos/y_train.npy', [4,8], [-1,1])
+#x, y = readData('datos/X_train.npy', 'datos/y_train.npy', [4,8], [-1,1])
 # Lectura de los datos para el test
-x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
+#x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
 
 
 #mostramos los datos
