@@ -50,7 +50,7 @@
 \spanishdecimal{.}
 
 %% Color de sintaxis
-\RequirePackage{minted}
+%\RequirePackage{minted}
 \RequirePackage{multicol}
 
 %% ************ UM Definitions (Start) *****************

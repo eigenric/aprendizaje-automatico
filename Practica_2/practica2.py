@@ -101,15 +101,18 @@ def signo(x):
 		return 1
 	return -1
 
+def f_r(x, y, a, b):
+    return y - a*x - b
+
 def f(x, y, a, b):
-	return signo(y - a*x - b)
+	return signo(f_r(x, y, a, b))
 
 print("Ejercicio 1.2a \n")
 
-def scatter_label_lines(x, y, ws_labels=None, ws_colors=None,
+def scatter_label_lines(x, y, size=10, lw=2, ws_labels=None, ws_colors=None,
                        x1_lim=None, x2_lim=None,
                        xlabel="$x$ axis", ylabel="$y$ axis", 
-                       ax=None, figname="Figure1",
+                       ax=None, figname="Figure1", title=None,
                        legend_upper=False):
     """
     Dibuja nube 2D de puntos con etiquetas y recta(s).
@@ -117,9 +120,9 @@ def scatter_label_lines(x, y, ws_labels=None, ws_colors=None,
     :param x: Array de puntos (x,y)
     :param y: Vector de etiquetas
 
-    :param a: Pendiente de la recta
-    :param b: Ordenada en el origen
+    :param size: Tamaño de los puntos
     :param ws_labels: Diccionario:  w  -> w_label para regresión lineal
+    :param ws_colors: Colores para las rectas
 
     :param x1_lim: Tupla mínimo y máximo valor de x1 
     :param x2_lim: Tupla mínimo y máximo valor de x2
@@ -146,8 +149,8 @@ def scatter_label_lines(x, y, ws_labels=None, ws_colors=None,
 
     for label in np.unique(y):
         x_label = x[y == label]
-        ax.scatter(x_label[:, 0], x_label[:, 1], s=10, color=next(colors), 
-                   alpha=1, label=f"Etiqueta {label}")
+        ax.scatter(x_label[:, 0], x_label[:, 1], s=size, color=next(colors), 
+                   alpha=1, label=f"Etiqueta {int(label)}")
 
     if ws_labels is not None:
         x1_min, x1_max = np.array([np.min(x[:, 0]), np.max(x[:, 0])])
@@ -158,7 +161,7 @@ def scatter_label_lines(x, y, ws_labels=None, ws_colors=None,
             x1_ar = np.array([x1_min, x1_max])
             # Si w0 + w1x1 + w2x2 = 0 => x2 = -1*(w1*x1 + w0)/w2
             x2_line = -1*(w[1]*x1_ar + w[0]) / w[2]
-            ax.plot(x1_ar, x2_line, color=w_color, label=w_label)
+            ax.plot(x1_ar, x2_line, color=w_color, label=w_label, linewidth=lw)
 
     if legend_upper:
         ax.legend(bbox_to_anchor=(0,1.02,1,0.2), 
@@ -170,22 +173,24 @@ def scatter_label_lines(x, y, ws_labels=None, ws_colors=None,
     ax.set(xlabel=xlabel, ylabel=ylabel,
            xlim=x1_lim, ylim=x2_lim)
 
+    if title is not None:
+        #ax.set_title(title, 0.40, 0.912)
+        ax.set_title(title, y=1.08)
+        
     plt.savefig(f"{figures}/{figname}.png", dpi=600)
     plt.show(block=True)
 
-def scatter_label_line(x, y, a, b, x1_lim=None, x2_lim=None,
+def scatter_label_line(x, y, a, b, size=10, lw=2, x1_lim=None, x2_lim=None,
                        xlabel="$x$ axis", ylabel="$y$ axis", 
-                       ax=None, figname="Figure1",
+                       ax=None, figname="Figure1", title=None,
                        legend_upper=False):
 
     w = np.array([-b, -a, 1])
     ws_labels = {f"y={a:.2f}x + {b:.2f}": w}
 
-    scatter_label_lines(x, y, ws_labels, ws_colors="kmy",
-                        x1_lim=x1_lim, x2_lim=x2_lim,
-                        xlabel=xlabel, ylabel=ylabel,
-                        ax=ax, figname=figname, 
-                        legend_upper=legend_upper)
+    scatter_label_lines(x, y, size=size, lw=lw, ws_labels=ws_labels, ws_colors="kmy", 
+                        x1_lim=x1_lim, x2_lim=x2_lim, xlabel=xlabel, ylabel=ylabel,
+                        ax=ax, figname=figname, title=title, legend_upper=legend_upper)
 
 # 1.2a Dibujar una gráfica donde los puntos muestren el resultado de su
 # etiqueta, junto con la recta usada para ello 
@@ -256,7 +261,7 @@ def plot_datos_cuad(X, y, fz, title='Point cloud plot',
     ax_c = f.colorbar(contour)
     ax_c.set_label('$f(x, y)$')
     ax_c.set_ticks([-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1])
-    ax.scatter(X[:, 0], X[:, 1], c=y, s=50, linewidth=2, 
+    ax.scatter(X[:, 0], X[:, 1], c=y, s=50, linewidth=1.5, 
                 cmap="RdYlBu", edgecolor='white')
     
     XX, YY = np.meshgrid(np.linspace(round(min(min_xy)), round(max(max_xy)),X.shape[0]),np.linspace(round(min(min_xy)), round(max(max_xy)),X.shape[0]))
@@ -366,25 +371,29 @@ def ajusta_PLA(datos, label, max_iter, vini):
     return ws, it, errs
 
 class Animation:
-    def __init__(self, X, y, interval=75, x1_lim=(-50, 50), x2_lim=(-50, 50), 
+    def __init__(self, X, y, interval=75, figsize=(8, 6), size=10, x1_lim=(-50, 50), x2_lim=(-50, 50), 
                  animname="Animacion", xlabel="$x$ axis", ylabel="$y$ axis"):
     
-        self._init(x1_lim, x2_lim, xlabel, ylabel)
+        self._init(X, y, size, figsize, x1_lim, x2_lim, xlabel, ylabel)
 
-        self.X = X
-        self.y = y
-
-        self.colors = itertools.cycle("rbgmcyk")
+        self.size = size
         self.interval = interval
         self.animname = animname
 
+        self.start()
+
 
     @classmethod
-    def _init(cls, x1_lim, x2_lim, xlabel, ylabel):
-        cls.fig, cls.ax = plt.subplots()
+    def _init(cls, X, y, size, figsize, x1_lim, x2_lim, xlabel, ylabel):
 
-        cls.linean, = cls.ax.plot([], [], color="k")
-        cls.y_label = cls.fig.text(0.40, 0.912, "")
+        cls.fig, cls.ax = plt.subplots(figsize=figsize)
+
+        cls.X = X
+        cls.y = y
+
+        cls.size = size
+        #cls.linean, = cls.ax.plot([], [], color="k")
+        cls.y_label = cls.fig.text(0.35, 0.9093, "")
 
         cls.xlabel = xlabel
         cls.ylabel = ylabel
@@ -392,18 +401,12 @@ class Animation:
         cls.x1_lim = x1_lim
         cls.x2_lim = x2_lim
 
+        cls.colors = "rbgmcyk"
+
         cls.ax.set(xlabel=cls.xlabel, ylabel=cls.ylabel, 
                    xlim=cls.x1_lim, ylim=cls.x2_lim)
-        
-    def scatter_label(self):
-        """Pinta los puntos con sus clases (colores)"""
-        for label in np.unique(self.y):
-            x_label = self.X[:, 1:][self.y == label]
-            self.ax.scatter(x_label[:, 0], x_label[:, 1], s=10, 
-                       color=next(self.colors), alpha=1, 
-                       label=f"Etiqueta {label}")
-        self.ax.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left", 
-                      mode="expand", borderaxespad=0, ncol=3)
+
+    
 
     @staticmethod
     def start():
@@ -417,42 +420,138 @@ class Animation:
     def _start(cls):
         """Antes del frame inicial"""
 
-        cls.linean.set_data([], [])
         cls.y_label.set_text("")
 
-        return cls.linean, cls.y_label
+        X = cls.X[:, 1:]
+        cls.min_xy = X.min(axis=0)
+        cls.max_xy = X.max(axis=0)
+        cls.border_xy = (cls.max_xy-cls.min_xy)*0.01
+
+        cls.xx, cls.yy = np.mgrid[cls.min_xy[0]-cls.border_xy[0]:cls.max_xy[0]+cls.border_xy[0]+0.001:cls.border_xy[0], 
+                          cls.min_xy[1]-cls.border_xy[1]:cls.max_xy[1]+cls.border_xy[1]+0.001:cls.border_xy[1]]
+
+        cls.grid = np.c_[cls.xx.ravel(), cls.yy.ravel(), np.ones_like(cls.xx).ravel()]
+        cls.pred_y = np.vectorize(f_r)(cls.grid[:, 0], cls.grid[:, 1], 0, 0)
+        cls.pred_y = np.clip(cls.pred_y, -1, 1).reshape(cls.xx.shape)
+        cls.pred_y = np.array([np.vectorize(signo)(yi) for yi in cls.pred_y])
+
+        cls.contourf = cls.ax.contourf(cls.xx, cls.yy, cls.pred_y, 1, cmap='RdBu',vmin=-1, vmax=1)
+        cls.ax_c = cls.fig.colorbar(cls.contourf)
+        ticks = np.linspace(y.min(axis=0), y.max(axis=0), 3)
+        cls.ax_c.set_ticks(ticks)
+        cls.ax_c.set_label('$f(x, y)$')
+
+        colors_it = iter(cls.colors)
+        for label in np.unique(cls.y):
+            x_label = X[cls.y == label]
+            cls.ax.scatter(x_label[:, 0], x_label[:, 1], s=50, linewidth=1.25,
+                       color=next(colors_it), edgecolor="white", 
+                       label=f"Etiqueta {int(label)}")
+
+        xs = np.linspace(round(min(cls.min_xy)), round(max(cls.max_xy)), X.shape[0])
+        ys = xs
+        XX, YY = np.meshgrid(xs, ys)
+        positions = np.vstack([XX.ravel(), YY.ravel()])
+        FXY = f_r(positions.T[:, 0], positions.T[:, 1], 0, 0).reshape(X.shape[0], X.shape[0])
+        
+        cls.contour = cls.ax.contour(XX, YY, FXY, [0], colors="black")
+
+        cls.ax.legend(bbox_to_anchor=(0,1.02,1,0.2), 
+                  loc="lower left", mode="expand", 
+                  borderaxespad=0, ncol=3)
+
+        cls.ax.set(xlabel=cls.xlabel, ylabel=cls.ylabel, 
+                   xlim=cls.x1_lim, ylim=cls.x2_lim)
+
+        return cls.contourf, cls.contour, cls.y_label
+
+
+    @classmethod
+    def plot_frame(cls, a, b):
+        """Ultimo frame de una animacion"""
+
+        for tp, rp in zip(cls.contourf.collections, cls.contour.collections):
+            tp.remove()
+            rp.remove()
+
+        X = cls.X[:, 1:]
+
+        cls.pred_y = np.vectorize(f_r)(cls.grid[:, 0], cls.grid[:, 1], a, b)
+        cls.pred_y = np.clip(cls.pred_y, -1, 1).reshape(cls.xx.shape)
+        cls.pred_y = np.array([np.vectorize(signo)(yi) for yi in cls.pred_y])
+
+        cls.ax.clear()
+        cls.contourf = cls.ax.contourf(cls.xx, cls.yy, cls.pred_y, 1, cmap='RdBu',vmin=-1, vmax=1)
+
+        colors_it = iter(cls.colors)
+        for label in np.unique(cls.y):
+            x_label = X[cls.y == label]
+            cls.ax.scatter(x_label[:, 0], x_label[:, 1], s=50, linewidth=1.25,
+                       color=next(colors_it), edgecolor="white", 
+                       label=f"Etiqueta {int(label)}")
+
+
+        xs = np.linspace(round(min(cls.min_xy)), round(max(cls.max_xy)), X.shape[0])
+        ys = xs
+        XX, YY = np.meshgrid(xs, ys)
+        positions = np.vstack([XX.ravel(), YY.ravel()])
+        FXY = f_r(positions.T[:, 0], positions.T[:, 1], a, b)
+
+        # Nuevo contour
+        cls.contour = cls.ax.contour(XX, YY, FXY.reshape(X.shape[0], X.shape[0]), [0], colors="black")
+
+        cls.ax.legend(bbox_to_anchor=(0,1.02,1,0.2), 
+                  loc="lower left", mode="expand", 
+                  borderaxespad=0, ncol=3)
+
+        cls.ax.set(xlabel=cls.xlabel, ylabel=cls.ylabel, 
+                   xlim=cls.x1_lim, ylim=cls.x2_lim)
+
+        return cls.contourf, cls.contour
+
 
     @classmethod
     def _update(cls, i, ws):
         """Actualiza la animacion en el frame i-esimo"""
-
+        
         if i < len(ws): 
-            xs = np.array([cls.x1_lim[0], cls.x1_lim[1]])
-            w = ws[i]
+            it, w = ws[i]
             # Pendiente y ordenada en el origen
             a, b = -w[1]/w[2], -w[0]/w[2]
-            line = a*xs + b
-            # Actualizamos la recta 
-            cls.linean.set_data(xs, line)
-            cls.y_label.set_text(f"It {i}: y={a:.2f}x + {b:.2f}")
+
+            cls.plot_frame(a, b)
+            cls.y_label.set_text(f"It {it}: y={a:.2f}x + {b:.2f}")
+
         else: # Ultimo frame
-            w = ws[-1]
+            it, w = ws[-1]
             a, b = -w[1]/w[2], -w[0]/w[2]
 
-            cls.linean.set(linewidth=2)
-            cls.y_label.set(x=0.38, color="g", fontsize=12)
-            cls.y_label.set_text(f"It {i}: y={a:.2f}x + {b:.2f}")
-    
-        return cls.linean, cls.y_label
+            collections = cls.plot_frame(a, b)
 
-    def render(self, ws):
+            #cls.linean.set_data([], [])
+            cls.y_label.set(x=0.33, color="g", fontsize=11)
+            cls.y_label.set_text(f"It {it}: y={a:.2f}x + {b:.2f}")
+
+    
+        return cls.contourf, cls.contour, cls.y_label
+
+    def render(self, ws, first=None, last=None):
         """Abre una ventana con la animacion"""
 
-        self.scatter_label() 
+        # Reducir longitud de la animacion
+        its = len(ws)
+        if first is None and last is not None:
+            ids = list(range(its-last, its))
+            ws_anim = list(zip(ids, ws[-last:]))
+        elif first and last is not None:
+            ids = list(range(first)) + list(range(its-last, its))
+            ws_anim = list(zip(ids, ws[:first] + ws[-last:]))
+        elif first is None and last is None:
+            ws_anim = list(enumerate(ws))
 
-        self.anim = FuncAnimation(self.fig, Animation.update, fargs=(ws, ),
-                                  init_func=Animation.start, repeat=False,
-                                  frames=len(ws)+1, interval=self.interval, 
+        self.anim = FuncAnimation(self.fig, Animation.update, fargs=(ws_anim, ),
+                                  repeat=False,
+                                  frames=len(ws_anim)+1, interval=self.interval, 
                                   blit=False)
         
     @staticmethod
@@ -480,7 +579,7 @@ def homogeneizar(X):
     return np.hstack((columna_unos, X))
 
 def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None, 
-                     animation=False, linewidth=1, interval=25):
+                     animation=False, linewidth=1, interval=75):
     vini = np.array([0, 0, 0])
     ws, it, errs0 = ajusta_PLA(X, y, max_iter, vini)
     err = errs0[-1]
@@ -488,21 +587,24 @@ def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None,
     err_percent = err / len(X) * 100
     err_ini = errs0[0] / len(X) * 100
 
-    print("Vector inicial | Iteraciones | Coeficientes w | Error de clasificación | Error inicial")
+    print("Vector inicial | Iteraciones | Coeficientes w | Error de clasificación") 
     print("----- | ----- | ----- | ---- ")
-    print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w0[0]:.2f},{w0[1]:.2f},{w0[2]:.2f}]$ | ${err_percent}\%$ | {err_ini}")
+    print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w0[0]:.2f},{w0[1]:.2f},{w0[2]:.2f}]$ | ${err_percent}\%$")
 
     if animation:
-        animation = Animation(X, y, interval=interval, animname="perceptron")
-        animation.render(ws)
-        animation.show()
+        anim = Animation(X, y, interval=interval,
+                        size=25, x1_lim=(-50, 50), x2_lim=(-50, 50), 
+                        animname="perceptron")
+        anim.render(ws)
+        #anim.save()
+        anim.show()
 
     fig, ax = plt.subplots()
     xs = range(len(errs0))
     ax.set_xlabel("Número de iteración")
     ax.set_ylabel("% Error de clasificación")
     ax.plot(xs, errs0, linewidth=linewidth)
-    plt.savefig(fr"{figures}\{figname1}.png", dpi=600)
+    #plt.savefig(fr"{figures}\{figname1}.png", dpi=600)
     #plt.show()
     plt.close()
     
@@ -527,8 +629,7 @@ def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None,
         errs.append(err)
         vinis.append(vini)
 
-        #print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w[0]:.2f},{w[1]:.2f},{w[2]:.2f}]$ | ${err_percent}\%$")
-        print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w0[0]:.2f},{w0[1]:.2f},{w0[2]:.2f}]$ | ${err_percent}\%$ | {err_ini}")
+        print(f"$[{vini[0]:.3f}, {vini[1]:.3f}, {vini[2]:.3f}]$ | ${it}$ | $[{w0[0]:.2f},{w0[1]:.2f},{w0[2]:.2f}]$ | ${err_percent}\%$")
 
     print(f"Promedio iteraciones: {np.mean(np.asarray(iterations))}")
     print(f"Promedio error de clasificación: {np.mean(np.asarray(errs))}")
@@ -544,7 +645,7 @@ def tabla_resultados(X, y, max_iter=10_000, figname1=None, figname2=None,
 
 # Reutilizamos apartado 2a del Ej 1. (Linealmente separables)
 # Con datos en forma homogénea (1 | x1 | x2)
-print("Ejercicio 2a \n")
+print("Ejercicio 2.1a \n")
 
 X = homogeneizar(X)
 y = y_original
@@ -552,14 +653,15 @@ y = y_original
 y_s = y.copy()
 y_s.shape = (len(y_s), 1)
 np.savetxt("muestra.csv", np.hstack((X, y_s)), delimiter=",")
+warnings.filterwarnings("ignore")
 
 tabla_resultados(X, y, max_iter=10_000, figname1="Figure_9",
-                 figname2="Figure_10", animation=False, interval=100)
+                 figname2="Figure_10", animation=True, interval=50)
 
 
 #input("\n--- Pulsar tecla para continuar ---\n")
 
-print("Ejercicio 2b \n")
+print("Ejercicio 2.1b \n")
 # Reutilizamos apartado 2b del Ej 1. (10% Ruido no l.s)
 # Con datos en forma homogénea
 y = y_noise
@@ -580,9 +682,9 @@ tabla_resultados(X, y, max_iter=max_iter, figname1="Figure_11",
 ###############################################################################
 ###############################################################################
 
-# EJERCICIO 3: REGRESIÓN LOGÍSTICA CON STOCHASTIC GRADIENT DESCENT
+# EJERCICIO 2.2: REGRESIÓN LOGÍSTICA CON STOCHASTIC GRADIENT DESCENT
 
-def error_clasificacion(X, y, w):
+def error_clas(X, y, w):
     """
     Calcula el porcentaje de error de clasificacion
 
@@ -592,15 +694,14 @@ def error_clasificacion(X, y, w):
     signos = y * (X @ w)
     return 100 * len(signos[signos < 0]) / len(signos)
 
-def error_clas(X, y, w):
-
-    err = 0
-    for xi, yi in zip(X, y):
-        if signo(xi @ w) != yi:
-            err += 1
-
-    return 100 * err / len(X) 
-
+# def error_clas(X, y, w):
+    # err = 0
+    # for xi, yi in zip(X, y):
+        # if signo(xi @ w) != yi:
+            # err += 1
+ 
+    # return 100 * err / len(X) 
+ 
 def error_RL(X, y, w):
     """Calcula el error de entropía cruzada E_in para Regresión Logística"""
 
@@ -611,19 +712,28 @@ def grad_ein_RL(xi, yi, w):
 
     return -yi*xi / (1 + np.exp(yi*w.dot(xi)))
 
-def sgdRL(X, y, lr, max_iter, batch_size=32):
-    """Algoritmo de regresión logística. Basado en SGD-Batch"""
+def sgdRL(X, y, lr, max_iter, vini=np.zeros(3), epsilon=0.01):
+    """Algoritmo de regresión logística. Basado en SGD Batch 1 elemento
+
+    :param X: matriz homogénea de datos
+    :param y: vector de etiquetas
+    :param lr: learning rate (tasa de aprendizaje eta)
+    :param max_iter: máximo numero de iteraciones
+    :param vini: vector inicial de pesos. (0, 0, 0) por defecto
+
+    :returns: histórico de pesos ws, y número de iteraciones para converger it
+        (ws, it)
+    """
 
     it = 0
     X_ids = np.arange(len(X))
 
-    # Inicializamos w_ini a 0
-    w = np.array([0, 0, 0])
+    # vini = (0, 0, 0) por defecto
+    w = vini
     ws = []
-
     w_dif = np.Infinity
 
-    while it < max_iter and w_dif >= 0.01:
+    while it < max_iter and w_dif >= epsilon:
         w_old = w.copy()
         X_ids = np.random.permutation(X_ids)
 
@@ -639,96 +749,116 @@ def sgdRL(X, y, lr, max_iter, batch_size=32):
 
     return ws, it
 
+print("Ejercicio 2.2 \n")
+print("Ejecución de experimento (100 repeticiones)")
+input("\n--- Pulsar tecla para continuar ---\n")
 
 E_ins = []
 E_outs = []
 E_clas_ins = []
 E_clas_outs = []
 epocas = []
-for i in range(100):
-    # Nuevo conjunto de datos χ = [0, 2] x [0, 2]
-    # N = 100
-    # Recta aleatoria para clasificar
 
-    X_train = homogeneizar(simula_unif(100, 2, [0, 2]))
-    X_test = homogeneizar(simula_unif(1000, 2, [0, 2]))
+print("Repetición | $E_{in}$ | $E_{out}$ | $E_{in}^{clas}$ (\%) | $E_{out}^{clas}$ (\%) |  Épocas ")
+print("---------- | -------- | -------- | ------- |  ----------- |  ------")
 
-    # Etiquetar los puntos train
-    a, b = simula_recta([0, 2])
-    y_train = np.fromiter((f(x1, x2, a, b) for _, x1, x2 in X_train), np.int64)
+def experimento_RL(rep=100, N=100, M=1000):
+    """Realiza N repeticiones del siguiente experimento:
+    1. Simular conjunto de datos uniformes de N puntos en [0, 2]
+    2. Ejecutar RL para encontrar la función g y evaluar E_out usando una
+    muestra nueva de M elementos
 
-    # Etiquetar puntos test
-    y_test = np.fromiter((f(x1, x2, a, b) for _, x1, x2 in X_test), np.int64)
+    Se verán los resultados obtenidos por RL en la primera iteración.
     
-    eta = 0.01
-    max_iter = 10_000
+    Imprime tabla de resultados junto con los promedios. O
+    """
 
-    ws, it = sgdRL(X_train, y_train, eta, max_iter)
-
-    E_in = error_RL(X_train, y_train, ws[-1])
-    E_clas_in = error_clas(X_train, y_train, ws[-1])
-
-    E_out = error_RL(X_test, y_test, ws[-1])
-    E_clas_out = error_clas(X_test, y_test, ws[-1])
-
-    E_ins.append(E_in)
-    E_clas_ins.append(E_clas_in)
-    E_clas_outs.append(E_clas_out)
-    E_outs.append(E_out)
-    epocas.append(it)
-
-    print(f"It: {it}, E_in: {E_in}, E_out: {E_out}")
-    print(f"E_clas_in: {E_clas_in}, E_clas_out: {E_clas_out}\n")
-
-    # Mostrar animacion del primero
-    if i == 0:
-        anim = Animation(X_train, y_train, interval=50,
-                         x1_lim=(0, 2), x2_lim=(0, 2), animname="RegresionLineal")
-        anim.render(ws)
-        anim.show()
-
-
-epocas_min, epocas_max = np.min(epocas), np.max(epocas)
-print(f"Epocas: (Min, max) = ({epocas_min}, {epocas_max})")
-epocas_mean = np.mean(epocas)
-print("Media 1")
-E_in_mean = np.mean(E_ins)
-print("Media 2")
-E_out_mean = np.mean(E_outs)
-print("Media 3")
-E_clas_in_mean = np.mean(E_clas_ins)
-print("Media 4")
-E_clas_out_mean = np.mean(E_clas_outs)
-print("Media 5")
-
-print(f"Promedio => Epocas: {epocas_mean} | E_out: {E_out_mean} | E_clas_in: {E_clas_in_mean} | E_clas_out : {E_clas_out_mean} ")
-
-    # fig, ax = plt.subplots()
-    # ax.set_xlabel("$eta$")
-    # ax.set_ylabel("$E_{in} \cdot it$")
-    # ax.plot(best_prod.keys(), best_prod.values())
-    # plt.show()
-
-
-#input("\n--- Pulsar tecla para continuar ---\n")
+    for i in range(rep):
+        # Nuevo conjunto de datos χ = [0, 2] x [0, 2]
+        # N = 100
+        # Recta aleatoria para clasificar
+    
+        X_train = homogeneizar(simula_unif(N, 2, [0, 2]))
+        X_test = homogeneizar(simula_unif(M, 2, [0, 2]))
+    
+        # Etiquetar los puntos train
+        a, b = simula_recta([0, 2])
+        y_train = np.fromiter((f(x1, x2, a, b) for _, x1, x2 in X_train), np.int64)
+    
+        # Etiquetar puntos test
+        y_test = np.fromiter((f(x1, x2, a, b) for _, x1, x2 in X_test), np.int64)
+        
+        eta = 0.01
+        max_iter = 1000
+    
+        ws, it = sgdRL(X_train, y_train, eta, max_iter)
+    
+        E_in = error_RL(X_train, y_train, ws[-1])
+        E_clas_in = error_clas(X_train, y_train, ws[-1])
+    
+        E_out = error_RL(X_test, y_test, ws[-1])
+        E_clas_out = error_clas(X_test, y_test, ws[-1])
+    
+        E_ins.append(E_in)
+        E_clas_ins.append(E_clas_in)
+        E_clas_outs.append(E_clas_out)
+        E_outs.append(E_out)
+        epocas.append(it)
+    
+        print(f"${i}$ | ${E_in:.3f}$ | ${E_out:.3f}$ | ${E_clas_in} \%$ | ${E_clas_out} \%$ | ${it}$")
+    
+        # Mostrar animacion y figuras del primero
+        if i == 0: 
+            anim = Animation(X_train, y_train, interval=100,
+                            size=25, x1_lim=(0, 2), x2_lim=(0, 2), 
+                            animname="RegresionLogistica")
+            anim.render(ws, first=25, last=25)
+            anim.show()
+    
+            input("\n--- Pulsar tecla para continuar ---\n")
+    
+            # Mostramos clasificación para conjunto de entrenamiento y test
+            w = ws[-1]
+            a, b = -w[1]/w[2], -w[0]/w[2]
+    
+            scatter_label_line(X_train[:, 1:], y_train, a, b,
+                            size=5, lw=1, x1_lim=(0, 2), x2_lim=(0, 2),
+                            figname="Figure_13", legend_upper=True)
+    
+            scatter_label_line(X_test[:, 1:], y_test, a, b,
+                                size=5, lw=1, x1_lim=(0, 2), x2_lim=(0, 2),
+                                figname="Figure_14", legend_upper=True)
     
 
+    print("--------------------------")
+    print("Resultados del experimento")
+    print("--------------------------")
 
-# Usar la muestra de datos etiquetada para encontrar nuestra solución g y estimar Eout
-# usando para ello un número suficientemente grande de nuevas muestras (>999).
+    epocas_mean = np.mean(epocas)
+    E_in_mean = np.mean(E_ins)
+    E_out_mean = np.mean(E_outs)
+    E_clas_in_mean = np.mean(E_clas_ins)
+    E_clas_out_mean = np.mean(E_clas_outs)
+
+    print("Repeticion | E_out | E_clas_out | Epocas")
+    print("---------- | ----- | ---------- | ----- ")
+    print(f"Promedio | {E_out_mean} | {E_clas_out_mean} | {epocas_mean}")
+    #print(f"Promedio | {E_in_mean} | {E_clas_in_mean}"")
+
+    epocas_min, epocas_max = np.min(epocas), np.max(epocas)
+    print(f"Extremos épocas: ({epocas_min}, {epocas_max})")
 
 
-#CODIGO DEL ESTUDIANTE
+experimento_RL(rep=100, N=100, M=1000)
 
-
-#input("\n--- Pulsar tecla para continuar ---\n")
-
+input("\n--- Pulsar tecla para continuar ---\n")
 
 ###############################################################################
 ###############################################################################
 ###############################################################################
 #BONUS: Clasificación de Dígitos
 
+print("BONUS: Clasificación de Dígitos \n")
 
 # Funcion para leer los datos
 def readData(file_x, file_y, digits, labels):
@@ -752,53 +882,265 @@ def readData(file_x, file_y, digits, labels):
 	return x, y
 
 # Lectura de los datos de entrenamiento
-#x, y = readData('datos/X_train.npy', 'datos/y_train.npy', [4,8], [-1,1])
+x, y = readData('datos/X_train.npy', 'datos/y_train.npy', [4,8], [-1,1])
 # Lectura de los datos para el test
-#x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
+x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
+
+print("Ejercicio 3.2a y b \n")
+
+print("Algoritmo | $E_{in}$ | $E_{out}$ | Iteraciones")
+print(" -------- | -------- | --------- | -----------")
+
+# LINEAR REGRESSION FOR CLASSIFICATION
+
+def MSE(x,y,w):
+    """Error cuadrático medio (MSE)
+    :param x: Matriz de datos de entrada 
+    :param y: Vector objetivo 
+    :param w: Vector de pesos
+
+    :return: Error cuadrático medio. (No negativo)
+    """
+    return np.linalg.norm(x @ w - y)**2 / len(x)
+
+def pseudoinverse(x):
+    """Pseudo-inversa (de Moore-Penrose).
+    :param x: Matriz de datos de entrada.
+    :nota: se descompone la matriz en valores singulares.
+           Si X = U D V^T, entoncex X^\dagger = V D^\dagger U^T
+    :return: Pseudoinversa de x         (x^t x)^-1 x^t
+    """
+    # Alternativamente
+    # return np.linalg.pinv(x) que también emplea SVD
+
+    U, d, VT = np.linalg.svd(x, full_matrices=True)
+    D = np.zeros(x.shape)
+    # Matriz diagonal rectangular. Resto ceros.
+    D[:x.shape[1], :x.shape[1]] = np.diag(d)
+    V = VT.T
+
+    return V @ np.linalg.inv(D.T @ D) @ D.T @ U.T
+
+def regresion_pinv(x, y):
+    """Resuelve el problema de regresión mediante el algoritmo de la Pseudoinversa
+
+    :param x: Matriz de datos de entrada
+    :param y: Vector objetivo
+
+    :return: w_lin = x^\dagger y
+    """
+
+    return pseudoinverse(x) @ y
+
+w = regresion_pinv(x, y)
+E_in_LinR = MSE(x, y, w)
+E_out_LinR = MSE(x_test, y_test, w)
+w_reg = w
+
+print(f"LINEAR REG | ${E_in_LinR:.3f}$ | ${E_out_LinR:.3f}$ | -----")
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_15", title="Dígitos Manuscritos (TRAINING) Reg. Lineal",
+                 legend_upper=True)
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_16", title="Dígitos Manuscritos (TEST) Reg. Lineal",
+                 legend_upper=True)
 
 
-#mostramos los datos
-# fig, ax = plt.subplots()
-# ax.plot(np.squeeze(x[np.where(y == -1),1]), np.squeeze(x[np.where(y == -1),2]), 
-#         '.', color='red', label='4', markersize=4)
-# ax.plot(np.squeeze(x[np.where(y == 1),1]), np.squeeze(x[np.where(y == 1),2]), 
-#         '.', color='blue', label='8', markersize=4)
-# ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TRAINING)')
-# ax.set_xlim((0, 1))
-# plt.legend()
-# plt.show()
+# PERCEPTRON LEARNING ALGORITHM
 
-# fig, ax = plt.subplots()
-# ax.plot(np.squeeze(x_test[np.where(y_test == -1),1]), np.squeeze(x_test[np.where(y_test == -1),2]), 
-#         '.', color='red', label='4', markersize=4)
-# ax.plot(np.squeeze(x_test[np.where(y_test == 1),1]), np.squeeze(x_test[np.where(y_test == 1),2]), 
-#         '.', color='blue', label='8', markersize=4)
-# ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TEST)')
-# ax.set_xlim((0, 1))
-# plt.legend()
-# plt.show()
+v_ini = np.array([0, 0, 0])
+max_iter = 1_000
+ws, it, errs = ajusta_PLA(x, y, max_iter, v_ini)
+w = ws[-1]
+E_in_PLA = error_clas(x, y, ws[-1]) / 100
+E_out_PLA = error_clas(x_test, y_test, ws[-1]) / 100
 
-#input("\n--- Pulsar tecla para continuar ---\n")
+print(f"PLA | ${E_in_PLA:.3f}$ | ${E_out_PLA:.3f}$ | ${it}$ ")
 
-#LINEAR REGRESSION FOR CLASSIFICATION 
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_17", title="Dígitos Manuscritos (TRAINING) PLA",
+                 legend_upper=True)
 
-#CODIGO DEL ESTUDIANTE
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_18", title="Dígitos Manuscritos (TEST) PLA",
+                 legend_upper=True)
+
+# LOGISTIC REGRESSION FOR CLASSIFICATION
+
+v_ini = np.array([0, 0, 0])
+lr = 0.01
+max_iter = 10_000
+ws, it = sgdRL(x, y, lr, max_iter, v_ini)
+w = ws[-1]
+E_in_RL = error_RL(x, y, ws[-1])
+E_out_RL = error_RL(x_test, y_test, ws[-1])
+
+print(f"RL | ${E_in_RL:.3f}$ | ${E_out_RL:.3f}$ | ${it}$")
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_19", title="Dígitos Manuscritos (TRAINING) Reg. Logística",
+                 legend_upper=True)
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_20", title="Dígitos Manuscritos (TEST) Reg. Logística",
+                 legend_upper=True)
 
 
-#input("\n--- Pulsar tecla para continuar ---\n")
+# PERCEPTRON LEARNING POCKET ALGORITHM (PLA-POCKET)
+
+def ajusta_PLA_POCKET(datos, label, max_iter, vini):
+    """Algoritmo de aprendizaje del Perceptrón versión POCKET
+    :param datos: matriz homogénea de caracteristicas
+    :param label: vector de etiquetas
+    :param max_iter: número máximo de iteraciones
+    :param vini: valor inicial del vector
+
+    :returns: lista coeficientes w, iteraciones, error de clasificacion
+    """
+    w = vini
+    w_old = None
+    it = 0
+    ws = []
+    E_in = np.Infinity
+
+    while it < max_iter:
+        w_old = w
+        E_in_old = E_in
+
+        for x, y in zip(datos, label):
+            if signo(w.T @ x) != y:
+                w_new = w + y * x
+                E_in = MSE(datos, label, w_new)
+
+                if E_in < E_in_old:
+                    w = w_new
+
+        ws.append(w)
+        it += 1
+
+        if np.allclose(w_old, w):
+            break
+
+    return ws, it
 
 
+v_ini = np.array([0, 0, 0])
+max_iter = 1_000
+ws, it = ajusta_PLA_POCKET(x, y, max_iter, v_ini)
+w = ws[-1]
+E_in_PLA_POCKET = error_clas(x, y, ws[-1]) / 100
+E_out_PLA_POCKET = error_clas(x_test, y_test, ws[-1]) / 100
 
-#POCKET ALGORITHM
-  
-#CODIGO DEL ESTUDIANTE
+print(f"PLA-POCKET | ${E_in_PLA_POCKET:.3f}$ | ${E_out_PLA_POCKET:.3f}$ | ${it}$ ")
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_21", title="Dígitos Manuscritos (TRAINING) PLA-POCKET",
+                 legend_upper=True)
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_22", title="Dígitos Manuscritos (TEST) PLA-POCKET",
+                 legend_upper=True)
 
 
+input("\n--- Pulsar tecla para continuar ---\n")
+
+print("Ejercicio 3.2c \n")
+
+# Usando el vector de pesos obtenidos por regresión lineal para
+# inicializar los algoritmos.
+
+print("Usando pesos de regresión lineal como vector inicial")
+print("Algoritmo | $E_{in}$ | $E_{out}$ | Iteraciones")
+print(" -------- | -------- | --------- | -----------")
+
+# PERCEPTRON LEARNING ALGORITHM
+
+v_ini = w_reg
+max_iter = 1_000
+ws, it, errs = ajusta_PLA(x, y, max_iter, v_ini)
+w = ws[-1]
+E_in_PLA = error_clas(x, y, ws[-1]) / 100
+E_out_PLA = error_clas(x_test, y_test, ws[-1]) / 100
+
+print(f"PLA | ${E_in_PLA:.3f}$ | ${E_out_PLA:.3f}$ | ${it}$ ")
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_23", title="Dígitos Manuscritos (TRAINING) PLA",
+                 legend_upper=True)
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_24", title="Dígitos Manuscritos (TEST) PLA",
+                 legend_upper=True)
+
+lr = 0.01
+max_iter = 10_000
+v_ini = w_reg
+ws, it = sgdRL(x, y, lr, max_iter, v_ini)
+w = ws[-1]
+E_in_RL = error_RL(x, y, ws[-1])
+E_out_RL = error_RL(x_test, y_test, ws[-1])
+
+# LOGISTIC REGRESSION FOR CLASSIFICATION
+
+print(f"RL | ${E_in_RL:.3f}$ | ${E_out_RL:.3f}$ | ${it}$")
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_25", title="Dígitos Manuscritos (TRAINING) Reg. Logística",
+                 legend_upper=True)
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_26", title="Dígitos Manuscritos (TEST) Reg. Logística",
+                 legend_upper=True)
 
 
-#input("\n--- Pulsar tecla para continuar ---\n")
+# PERCEPTRON LEARNING POCKET ALGORITHM (PLA-POCKET)
+
+v_ini = w_reg
+max_iter = 1_000
+ws, it = ajusta_PLA_POCKET(x, y, max_iter, v_ini)
+w = ws[-1]
+E_in_PLA_POCKET = error_clas(x, y, ws[-1]) / 100
+E_out_PLA_POCKET = error_clas(x_test, y_test, ws[-1]) / 100
+
+print(f"PLA-POCKET | ${E_in_PLA_POCKET:.3f}$ | ${E_out_PLA_POCKET:.3f}$ | ${it}$ ")
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_27", title="Dígitos Manuscritos (TRAINING) PLA-POCKET",
+                 legend_upper=True)
+
+scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+                 x1_lim=[0, 1], x2_lim=[-7, -1], 
+                 xlabel="Intensidad Promedio", ylabel="Simetría",
+                 figname="Figure_28", title="Dígitos Manuscritos (TEST) PLA-POCKET",
+                 legend_upper=True)
 
 
-#COTA SOBRE EL ERROR
-
-#CODIGO DEL ESTUDIANTE
+# COTA SOBRE EL ERROR

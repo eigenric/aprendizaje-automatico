@@ -197,3 +197,79 @@ como el tamaño de batch.
 $E_{out}$, de porcentaje de error de clasificación, y de épocas necesarias para
 converger.
 \end{itemize}
+
+\hfill \break
+
+Recordamos que la Regresión Logística es un modelo lineal de clasificación,
+donde ahora la función hipótesis es de la forma
+
+\begin{equation}
+h(x) = \theta(w^T X)
+\end{equation}
+
+con $\theta(s) = \frac{e^s}{1 + e^s} = \frac{1}{1 + e^{-s}}$ la llamada
+\textbf{función logística o sigmoide} que toma valores en $[0, 1]$. Estos se
+interpretan de forma probabilística para un evento binario.
+A través del método de máxima verosimilitud (\cite{LFD}), obtenemos 
+una medida de error en la muestra:
+
+\begin{equation}
+E_{in}(w) = \frac{1}{N} \sum_{n=1}^N \ln(1 + e^{y_n w^T x_n})
+\end{equation}
+
+Intuitivamente, el error se acerca más a cero cuanto mayor es cada
+$y_n w^T x_n$ (positivo). Esto implicaría que $\text{sign}(w^T x_n) = y_n$,
+es decir, un número mayor de instancias $x_n$ bien clasificadas.
+
+Para entrenar el modelo, aplicamos \textbf{gradiente descendente estocástico (SGD)}
+en su versión \textbf{batch de 1 elemento}. Es decir, por cada época hallamos una
+permutación de las instancias $x_n$ (índices en la implementación), computamos
+el gradiente de cada instancia y actualizamos los pesos. La expresión del gradiente
+para batch de tamaño $M=1$ es (\cite{LFD}):
+
+\begin{equation}
+  \nabla E_{in}(w) = \frac{-1}{M} \sum_{n=1}^M \frac{y_nx_n}{1+e^{y_n w^T x_n}} = \frac{-y_n x_n}{1+e^{y_n w^T x_n}}
+\end{equation}
+
+La implementación del algoritmo se encuentra en la función \\
+\mintinline{python}{sgdRL(X, y, lr, max_iter, epsilon=0.01)} y se ha seguido el
+criterio de parada descrito en el enunciado $\Vert w(t+1) - w(t) \Vert < 0.01$
+parametrizando $0.01$ como \mintinline{python}{epsilon} por si se quisiera
+experimentar con otros valores en un futuro.
+
+En cuanto a la realización del experimento, se ha decidido generar la muestra de test
+$X_{test}$ con $1000$ elementos ($> 999$) para no incrementar demasiado el tiempo
+de ejecución en las $100$ repeticiones. Todas las llamadas al algoritmo de aprendizaje
+de Regresión Lineal se han realizado con un \textbf{learning rate $\eta = 0.01$, un número máximo
+de $1000$ iteraciones y tamaño de batch de $1$ elemento.}
+
+En efecto, se ha comprobado experimentalmente que valores mayores de $\eta$
+$(0.2, 0.4, 0.6)$ implican un mayor número de iteraciones debido al criterio de
+parada (la distancia entre los vectores de pesos tarda más en disminuir), aunque
+menor error $E_{in}$.
+
+Por otro lado, se implementó inicialmente el algoritmo de aprendizaje de
+regesión logística en su versión SGD minibatch con tamaño de batch superiores a $1$
+$(2, 4, 16, 32, 64)$, ofreciendo menor número de épocas aunque mayor error.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{llll}
+    \toprule
+        Repetición & $E_{out}$ & $E_{out}^{clas}$ (\%) & Épocas para converger \\ \midrule
+        $0$ & $0.099$ & $0.8 \%$ & $373$ \hfill \\
+        $1$ & $0.094$ & $0.7 \%$ & $411$ \hfill\\
+        $2$ & $0.136$ & $0.9 \%$ & $536$ \hfill \\
+        $3$ & $0.107$ & $0.2 \%$ & $415$ \hfill \\
+        $4$ & $0.099$ & $2.7 \%$ & $399$ \hfill \\
+        $5$ & $0.118$ & $0.7 \%$ & $473$ \hfill \\
+        $\dots$ & $\dots$ & $\dots$ & $\dots$ \hfill \\
+        $95$ & $0.122$ & $4.0 \%$ & $283$ \hfill \\
+        $96$ & $0.095$ & $1.7 \%$ & $374$ \hfill \\
+        $97$ & $0.108$ & $0.8 \%$ & $426$ \hfill \\
+        $98$ & $0.145$ & $2.3 \%$ & $476$ \hfill \\
+        $99$ & $0.146$ & $4.7 \%$ & $410$ \hfill \\ \bottomrule
+        \textbf{Promedio} & \textbf{$0.117$} & \textbf{$2.46 \%$} & \textbf{$413.25$} \\ \bottomrule
+    \end{tabular}
+    \caption{Resultados de ejecución de 100 experimentos de Regresión Logística}
+\end{table}
