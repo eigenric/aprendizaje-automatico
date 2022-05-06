@@ -694,13 +694,13 @@ def error_clas(X, y, w):
     signos = y * (X @ w)
     return 100 * len(signos[signos < 0]) / len(signos)
 
-# def error_clas(X, y, w):
-    # err = 0
-    # for xi, yi in zip(X, y):
-        # if signo(xi @ w) != yi:
-            # err += 1
+def error_clas2(X, y, w):
+    err = 0
+    for xi, yi in zip(X, y):
+        if signo(xi @ w) != yi:
+            err += 1
  
-    # return 100 * err / len(X) 
+    return 100 * err / len(X) 
  
 def error_RL(X, y, w):
     """Calcula el error de entropía cruzada E_in para Regresión Logística"""
@@ -846,7 +846,9 @@ def experimento_RL(rep=100, N=100, M=1000):
     #print(f"Promedio | {E_in_mean} | {E_clas_in_mean}"")
 
     epocas_min, epocas_max = np.min(epocas), np.max(epocas)
+    epocas_std = np.std(epocas)
     print(f"Extremos épocas: ({epocas_min}, {epocas_max})")
+    print(f"Desviación típica de épocas: {epocas_std}")
 
 
 experimento_RL(rep=100, N=100, M=1000)
@@ -888,8 +890,8 @@ x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
 
 print("Ejercicio 3.2a y b \n")
 
-print("Algoritmo | $E_{in}$ | $E_{out}$ | Iteraciones")
-print(" -------- | -------- | --------- | -----------")
+print("Algoritmo | $E_{in}$ | $E_{out}$ | $E_{in}^{clas}$ | E_{out}^{clas} | It")
+print(" -------- | -------- | --------- | --------------- | -------------- | ---")
 
 # LINEAR REGRESSION FOR CLASSIFICATION
 
@@ -935,9 +937,11 @@ def regresion_pinv(x, y):
 w = regresion_pinv(x, y)
 E_in_LinR = MSE(x, y, w)
 E_out_LinR = MSE(x_test, y_test, w)
+E_in_clas = error_clas(x, y, w) / 100
+E_out_clas = error_clas(x_test, y_test, w) / 100
 w_reg = w
 
-print(f"LINEAR REG | ${E_in_LinR:.3f}$ | ${E_out_LinR:.3f}$ | -----")
+print(f"LINEAR REG | ${E_in_LinR:.3f}$ | ${E_out_LinR:.3f}$ | ${E_in_clas:.3f}$ | ${E_out_clas:.3f}$ | -----")
 
 scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
@@ -945,7 +949,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_15", title="Dígitos Manuscritos (TRAINING) Reg. Lineal",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_16", title="Dígitos Manuscritos (TEST) Reg. Lineal",
@@ -958,10 +962,10 @@ v_ini = np.array([0, 0, 0])
 max_iter = 1_000
 ws, it, errs = ajusta_PLA(x, y, max_iter, v_ini)
 w = ws[-1]
-E_in_PLA = error_clas(x, y, ws[-1]) / 100
-E_out_PLA = error_clas(x_test, y_test, ws[-1]) / 100
+E_in_PLA = error_clas2(x, y, w) / 100
+E_out_PLA = error_clas2(x_test, y_test, w) / 100
 
-print(f"PLA | ${E_in_PLA:.3f}$ | ${E_out_PLA:.3f}$ | ${it}$ ")
+print(f"PLA | ${E_in_PLA:.3f}$ | ${E_out_PLA:.3f}$ | ${E_in_PLA:.3f}$ | ${E_out_PLA:.3f}$ | ${it}$ ")
 
 scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
@@ -969,7 +973,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_17", title="Dígitos Manuscritos (TRAINING) PLA",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_18", title="Dígitos Manuscritos (TEST) PLA",
@@ -985,7 +989,10 @@ w = ws[-1]
 E_in_RL = error_RL(x, y, ws[-1])
 E_out_RL = error_RL(x_test, y_test, ws[-1])
 
-print(f"RL | ${E_in_RL:.3f}$ | ${E_out_RL:.3f}$ | ${it}$")
+E_in_clas = error_clas(x, y, w) / 100
+E_out_clas = error_clas(x_test, y_test, w) / 100
+
+print(f"RL | ${E_in_RL:.3f}$ | ${E_out_RL:.3f}$ | ${E_in_clas:.3f}$ | ${E_out_clas:.3f}$ | ${it}$")
 
 scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
@@ -993,7 +1000,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_19", title="Dígitos Manuscritos (TRAINING) Reg. Logística",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_20", title="Dígitos Manuscritos (TEST) Reg. Logística",
@@ -1053,7 +1060,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_21", title="Dígitos Manuscritos (TRAINING) PLA-POCKET",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_22", title="Dígitos Manuscritos (TEST) PLA-POCKET",
@@ -1088,7 +1095,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_23", title="Dígitos Manuscritos (TRAINING) PLA",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_24", title="Dígitos Manuscritos (TEST) PLA",
@@ -1102,9 +1109,12 @@ w = ws[-1]
 E_in_RL = error_RL(x, y, ws[-1])
 E_out_RL = error_RL(x_test, y_test, ws[-1])
 
+E_in_clas = error_clas(x, y, w) / 100
+E_out_clas = error_clas(x_test, y_test, w) / 100
+
 # LOGISTIC REGRESSION FOR CLASSIFICATION
 
-print(f"RL | ${E_in_RL:.3f}$ | ${E_out_RL:.3f}$ | ${it}$")
+print(f"RL | ${E_in_RL:.3f}$ | ${E_out_RL:.3f}$ | ${E_in_clas:.3f}$ | ${E_out_clas:.3f}$ | ${it}$")
 
 scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
@@ -1112,7 +1122,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_25", title="Dígitos Manuscritos (TRAINING) Reg. Logística",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_26", title="Dígitos Manuscritos (TEST) Reg. Logística",
@@ -1125,8 +1135,8 @@ v_ini = w_reg
 max_iter = 1_000
 ws, it = ajusta_PLA_POCKET(x, y, max_iter, v_ini)
 w = ws[-1]
-E_in_PLA_POCKET = error_clas(x, y, ws[-1]) / 100
-E_out_PLA_POCKET = error_clas(x_test, y_test, ws[-1]) / 100
+E_in_PLA_POCKET = error_clas(x, y, w) / 100
+E_out_PLA_POCKET = error_clas(x_test, y_test, w) / 100
 
 print(f"PLA-POCKET | ${E_in_PLA_POCKET:.3f}$ | ${E_out_PLA_POCKET:.3f}$ | ${it}$ ")
 
@@ -1136,7 +1146,7 @@ scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2],
                  figname="Figure_27", title="Dígitos Manuscritos (TRAINING) PLA-POCKET",
                  legend_upper=True)
 
-scatter_label_line(x[:, 1:], y, -w[1]/w[2], -w[0]/w[2], 
+scatter_label_line(x_test[:, 1:], y_test, -w[1]/w[2], -w[0]/w[2], 
                  x1_lim=[0, 1], x2_lim=[-7, -1], 
                  xlabel="Intensidad Promedio", ylabel="Simetría",
                  figname="Figure_28", title="Dígitos Manuscritos (TEST) PLA-POCKET",

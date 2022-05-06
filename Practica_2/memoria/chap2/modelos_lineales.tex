@@ -273,3 +273,29 @@ $(2, 4, 16, 32, 64)$, ofreciendo menor número de épocas aunque mayor error.
     \end{tabular}
     \caption{Resultados de ejecución de 100 experimentos de Regresión Logística}
 \end{table}
+
+Además, las épocas extremas alcanzadas en el experimento son de $74$ y $592$. Y
+la desviación típica es considerable ($\sigma = 71.73$ éps.) que asociamos al componente
+aleatorio.
+
+\subsection{Gráficas para la primera repetición}
+
+\begin{figure}[H]
+  \caption{Regresión logística aplicada a dos muestras uniformes}\par\medskip
+  \begin{minipage}[b]{.5\linewidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figure_13}
+    \subcaption{Muestra de entrenamiento de tamaño $100$} \label{subfig-4:dummy78}
+  \end{minipage}
+  \hfill \hfill
+  \begin{minipage}[b]{.5\linewidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{Figure_14}
+    \subcaption{Muestra de test de tamaño $1000$ > $999$}
+  \end{minipage}
+  \label{fig:dummy78}
+\end{figure}
+
+Se concluye tras el experimento que gradiente descendente estocástico para
+Regresión Lineal obtiene buenos resultados ($97.5 \%$ de precisión media en
+test) en un número razonable de iteraciones (promedio de $413$).
