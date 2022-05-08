@@ -152,10 +152,10 @@ Si calculamos el error de clasificación en cada uno de los casos obtenemos:
     \toprule
         $f_i$ & Error de clasificación (\%) \\ \midrule
         Recta $f$            & $10\%$ \\
-        Circunferencia $f_1$ & $44\%$  \\ 
-        Elipse $f_2$         & $52\%$  \\
-        Hipérbola $f_3$      & $81\%$  \\
-        Parábola $f_4$       & $68\%$ \\ \bottomrule
+        Circunferencia $f_1$ & $41\%$  \\ 
+        Elipse $f_2$         & $49\%$  \\
+        Hipérbola $f_3$      & $84\%$  \\
+        Parábola $f_4$       & $73\%$ \\ \bottomrule
     \end{tabular}
 \end{table}
 
@@ -172,3 +172,16 @@ distinto $\mathcal{H}$.
 De hecho, para funciones demasiado complejas es probable que tengamos
 un problema de \textbf{sobreajuste} (overfitting) impidiendo una buena
 generalización (alto valor de $E_{out}$).
+
+Finalmente, nos preguntamos qué ocurriría si usamos alguna de esta funciones para
+clasificar los datos y luego añadimos el $10\%$ de ruido. Por ejemplo, etiquetando
+con la circunferencia es claro que resultan datos no linealmente separables. El error
+de clasificación con una función más sencilla (recta) será notablemente superior y
+de igual manera que con el clasificador lineal, será imposible encontrar circunferencia
+que obtenga menor error de clasificación al $10\%$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{Figure_29.png}
+\caption{Muestra etiquetada por circunferencia con 10\% de ruido}
+\end{figure}
