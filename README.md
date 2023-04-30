@@ -12,6 +12,8 @@ Portada | Capítulo
 :-------------------------:|:-------------------------:
 ![](https://raw.githubusercontent.com/eigenric/ugr-template/main/preview1.png)  |  ![](https://raw.githubusercontent.com/eigenric/ugr-template/main/preview2.png)
 
+En el código se desarrolló un generador de animaciones para visualizar mejor los algoritmos de entrenamiento de perceptrón.
+
 https://user-images.githubusercontent.com/1909548/163650467-1a3e0304-a971-4f82-bd54-c6aceedf7604.mp4
 
 # Licencia
