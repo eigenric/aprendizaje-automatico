@@ -1,6 +1,6 @@
 # Aprendizaje Automático
 
-Prácticas realizadas durantel curso 22/23 para la asignatura optativa de Aprendizaje Automático
+Prácticas realizadas durantel curso 21/22 para la asignatura optativa de Aprendizaje Automático
 de la rama de Computación y Sistemas Inteligentes.
 
 - [Práctica 0](Practica_0)
