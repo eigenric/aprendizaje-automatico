@@ -3,6 +3,9 @@
 Prácticas realizadas durante el curso 21/22 para la asignatura optativa de Aprendizaje Automático
 de la rama de Computación y Sistemas Inteligentes.
 
+<img width="863" alt="Captura de pantalla 2023-05-19 a las 20 21 41" src="https://github.com/eigenric/aprendizaje-automatico/assets/1909548/23dea4b4-6c2f-4115-a448-18356942d7c2">
+
+
 - [Práctica 0](Practica_0)
 - [Práctica 1](Practica_1)
 - [Práctica 2](Practica_2)
